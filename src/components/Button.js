@@ -1,4 +1,7 @@
 import React from 'react'
+import Radium from 'radium';
+import color from 'color';
+
 import { StyleSheet } from 'react-native'
 import { Button as PaperButton } from 'react-native-paper'
 import { theme } from '../core/theme'
@@ -20,14 +23,16 @@ export default function Button({ mode, style, ...props }) {
 
 const styles = StyleSheet.create({
   button: {
-    width: '100%',
+    width: '40%',
     marginVertical: 10,
     paddingVertical: 2,
-    shadowColor: '0px 4px 4px rgba(0, 0, 0, 0.25)',
-    backgroundColor: '#5F1880'
+    backgroundColor: '#7e22a8',
+    alignSelf: 'flex-end',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.4)',
   },
   text: {
-    fontWeight: 'bold',
+    fontFamily: 'Raleway_400Regular',
     fontSize: 15,
     lineHeight: 26,
   },
