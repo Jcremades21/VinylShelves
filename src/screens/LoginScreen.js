@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
-import { TouchableOpacity, StyleSheet, View } from 'react-native'
+import React, { useState, useRef, useEffect, useContext } from 'react'
+import axios from 'axios';
+import { TouchableOpacity, StyleSheet, View, MsgBox } from 'react-native'
+import { FiMail, FiLock } from 'react-icons/fi'
 import { Text } from 'react-native-paper'
 import Background from '../components/Background'
 import Logo from '../components/Logo'
@@ -49,6 +51,10 @@ import Svg, {
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
+  const [success, setSuccess] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
+  const errRef = useRef();
+
   let [fontsLoaded] = useFonts({
     Raleway_400Regular,
     Raleway_700Bold,
@@ -141,18 +147,69 @@ export default function LoginScreen({ navigation }) {
   }
   
 
-  const onLoginPressed = () => {
+  const onLoginPressed =  async (e) => {
     const emailError = emailValidator(email.value)
     const passwordError = passwordValidator(password.value)
+    e.preventDefault();
+
     if (emailError || passwordError) {
       setEmail({ ...email, error: emailError })
       setPassword({ ...password, error: passwordError })
       return
     }
-    navigation.reset({
+    else{
+      setEmail({ ...email, error: emailError })
+      setPassword({ ...password, error: passwordError })
+      let emailform = email.value;
+      let passform = password.value;
+      const data = {
+        email : emailform,
+        password : passform
+      }
+      //comprobación login
+        try {
+
+          axios.post('http://192.168.1.33:3000/api/login',
+              data,
+              {
+                  headers: { 'Content-Type': 'application/json' },
+                  withCredentials: true
+              }
+          ).then((res) => {
+            console.log(res.data)
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Dashboard' }],
+            });
+            setSuccess(true);
+            //clear state and controlled inputs
+            //need value attrib on inputs for this
+            setEmail('');
+            setPassword('');
+          })
+          .catch((error) => {
+            console.error(error)
+          });
+
+      } catch (err) {
+          if (!err?.response) {
+              setErrMsg('No Server Response');
+          } else if (err.response?.status === 400) {
+              setErrMsg('Missing Username or Password');
+          } else if (err.response?.status === 401) {
+              setErrMsg('Unauthorized');
+          } else {
+              setErrMsg('Login Failed');
+          }
+          console.log(errMsg);
+      }
+      
+    }
+    
+    /*navigation.reset({
       index: 0,
       routes: [{ name: 'Dashboard' }],
-    })
+    })*/
   }
 
   return (
@@ -178,6 +235,7 @@ export default function LoginScreen({ navigation }) {
         autoCompleteType="email"
         textContentType="emailAddress"
         keyboardType="email-address"
+        icon={<FiMail/>}
       />
       <Text style={[
        { fontFamily:'Raleway_400Regular' }
@@ -191,6 +249,7 @@ export default function LoginScreen({ navigation }) {
         error={!!password.error}
         errorText={password.error}
         secureTextEntry
+        icon={<FiLock/>}
       />
       <View style={styles.forgotPassword}>
         <SocialButtonGoogle></SocialButtonGoogle>
