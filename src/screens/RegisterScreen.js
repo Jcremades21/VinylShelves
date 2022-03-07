@@ -21,11 +21,13 @@ export default function RegisterScreen({ navigation }) {
   const [errMsg, setErrMsg] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
-  const toMainPage = () => {
+  const toLoginPage = () => {
+    if(success){
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Dashboard' }],
+        routes: [{ name: 'LoginScreen' }],
       });
+    }
   }
 
   const onSignUpPressed = () => {
@@ -60,8 +62,6 @@ export default function RegisterScreen({ navigation }) {
           console.log(res.data)
           setSuccess(true);
           setModalVisible(true);
-          setName('');
-          setPassword('');
         })
         .catch((error) => {
           console.error(error)
@@ -98,7 +98,7 @@ export default function RegisterScreen({ navigation }) {
             <Button
               style={styles.buttonClose}
               onPress={() => setModalVisible(!modalVisible)}
-              onPress={() => toMainPage()}
+              onPress={() => toLoginPage()}
             >
               <Text style={styles.modalText}>BEGIN!</Text>
             </Button>
