@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo-google-fonts/raleway": "^0.2.2",
+    "@react-native-async-storage/async-storage": "^1.16.1",
     "@react-navigation/native": "^6.0.8",
     "@react-navigation/stack": "^6.1.1",
     "axios": "^0.26.0",
@@ -31,6 +32,7 @@
     "react-native-paper": "^4.11.2",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-status-bar-height": "^2.6.0",
+    "react-native-storage": "^1.0.1",
     "react-native-svg": "^12.3.0",
     "react-native-text-gradient": "^0.1.7",
     "react-native-web": "0.17.1"

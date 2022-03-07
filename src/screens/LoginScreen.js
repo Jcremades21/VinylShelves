@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
 import axios from 'axios';
-import { TouchableOpacity, StyleSheet, View, MsgBox } from 'react-native'
+import storage from '.';
+import { TouchableOpacity, StyleSheet, View, MsgBox, AsyncStorage  } from 'react-native'
 import { FiMail, FiLock } from 'react-icons/fi'
 import { Text } from 'react-native-paper'
 import Background from '../components/Background'
@@ -17,24 +18,11 @@ import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
 import {
   useFonts,
-  Raleway_100Thin,
-  Raleway_200ExtraLight,
   Raleway_300Light,
   Raleway_400Regular,
-  Raleway_500Medium,
-  Raleway_600SemiBold,
   Raleway_700Bold,
-  Raleway_800ExtraBold,
-  Raleway_900Black,
-  Raleway_100Thin_Italic,
-  Raleway_200ExtraLight_Italic,
   Raleway_300Light_Italic,
   Raleway_400Regular_Italic,
-  Raleway_500Medium_Italic,
-  Raleway_600SemiBold_Italic,
-  Raleway_700Bold_Italic,
-  Raleway_800ExtraBold_Italic,
-  Raleway_900Black_Italic,
 } from '@expo-google-fonts/raleway';
 import Svg, {
   Path,
@@ -176,14 +164,24 @@ export default function LoginScreen({ navigation }) {
                   withCredentials: true
               }
           ).then((res) => {
-            console.log(res.data)
+            console.log(res.data.token);
             navigation.reset({
               index: 0,
               routes: [{ name: 'Dashboard' }],
             });
             setSuccess(true);
-            //clear state and controlled inputs
-            //need value attrib on inputs for this
+            storage.save({
+              key: 'loginState', // Note: Do not use underscore("_") in key!
+              data: {
+                from: 'some other site',
+                useremail: email.value,
+                token: res.data.token
+              },
+            
+              // if expires not specified, the defaultExpires will be applied instead.
+              // if set to null, then it will never expire.
+              expires: 1000 * 3600
+            });
             setEmail('');
             setPassword('');
           })

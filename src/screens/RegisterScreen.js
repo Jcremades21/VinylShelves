@@ -80,6 +80,10 @@ export default function RegisterScreen({ navigation }) {
     }
   
   }
+  function clickregistro(){
+    setModalVisible((!modalVisible));
+    toLoginPage();
+  }
 
   return (
     <Background>
@@ -97,8 +101,7 @@ export default function RegisterScreen({ navigation }) {
             <Text style={styles.modalText}>Account created successfully!</Text>
             <Button
               style={styles.buttonClose}
-              onPress={() => setModalVisible(!modalVisible)}
-              onPress={() => toLoginPage()}
+              onPress={() => clickregistro()}
             >
               <Text style={styles.modalText}>BEGIN!</Text>
             </Button>
