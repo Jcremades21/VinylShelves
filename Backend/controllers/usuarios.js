@@ -23,13 +23,13 @@ const obtenerUsuarios = async(req, res) => {
     try {
 
         // Solo puede listar usuarios un admin
-        const token = req.header('x-token');
+        /*const token = req.header('x-token');
         if (!((infoToken(token).rol === 'ADMIN') || (infoToken(token).uid === id))) {
             return res.status(400).json({
                 ok: false,
                 msg: 'No tiene permisos para listar usuarios',
             });
-        }
+        }*/
 
         let usuarios, total;
         // Si ha llegado ID, hacemos el get /id

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
+import { Url } from '../global'
 import axios from 'axios';
 import storage from '.';
 import { TouchableOpacity, StyleSheet, View, MsgBox, AsyncStorage  } from 'react-native'
@@ -16,6 +17,8 @@ import SocialButtonGoogle from '../components/SocialButtonGoogle'
 import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
+import AppLoading from 'expo-app-loading';
+
 import {
   useFonts,
   Raleway_300Light,
@@ -47,6 +50,9 @@ export default function LoginScreen({ navigation }) {
     Raleway_400Regular,
     Raleway_700Bold,
     });
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
 
   function SvgTop1(){
     return(<Svg
@@ -134,12 +140,13 @@ export default function LoginScreen({ navigation }) {
     </Svg>)
   }
   
+  ;
 
   const onLoginPressed =  async (e) => {
     const emailError = emailValidator(email.value)
     const passwordError = passwordValidator(password.value)
     e.preventDefault();
-
+    
     if (emailError || passwordError) {
       setEmail({ ...email, error: emailError })
       setPassword({ ...password, error: passwordError })
@@ -156,8 +163,9 @@ export default function LoginScreen({ navigation }) {
       }
       //comprobación login
         try {
-
-          axios.post('http://192.168.1.33:3000/api/login',
+          let url = Url + "/login";
+          console.log(url);
+          axios.post(url,
               data,
               {
                   headers: { 'Content-Type': 'application/json' },
@@ -165,23 +173,19 @@ export default function LoginScreen({ navigation }) {
               }
           ).then((res) => {
             console.log(res.data.token);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Dashboard' }],
-            });
             setSuccess(true);
             storage.save({
               key: 'loginState', // Note: Do not use underscore("_") in key!
               data: {
                 from: 'some other site',
                 useremail: email.value,
-                token: res.data.token
+                token: res.data.token,
+                uid: res.data.uid
               },
-            
               // if expires not specified, the defaultExpires will be applied instead.
               // if set to null, then it will never expire.
-              expires: 1000 * 3600
             });
+            navigation.navigate('Dashboard');
             setEmail('');
             setPassword('');
           })

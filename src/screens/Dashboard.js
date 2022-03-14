@@ -1,30 +1,64 @@
-import React from 'react'
-import { TouchableOpacity, StyleSheet, View, MsgBox, Text  } from 'react-native'
+import React, { useState, useRef, useEffect, useContext } from 'react'
+import { TouchableOpacity, StyleSheet, View, MsgBox, Text, SafeAreaView   } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
+import { Credentials } from '../helpers/credentials';
 import Background from '../components/Background'
 import Logo from '../components/Logo'
 import Header from '../components/Header'
 import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
+import CustomSlider from '../components/Carrousel'
 import Button from '../components/Button'
 import storage from '.'
+import { ParallaxImage } from 'react-native-snap-carousel';
 import { theme } from '../core/theme'
-import {
-  useFonts,
-  Raleway_300Light,
-  Raleway_400Regular,
-  Raleway_700Bold,
-  Raleway_300Light_Italic,
-  Raleway_400Regular_Italic,
-} from '@expo-google-fonts/raleway';
+import axios from 'axios';
+import {decode as atob, encode as btoa} from 'base-64'
+import { Url, usuemail } from '../global'
+import AppLoading from 'expo-app-loading';
 
 export default function Dashboard({ navigation }) {
-  const username = 'User';
-  let [fontsLoaded] = useFonts({
-    Raleway_400Regular,
-    Raleway_700Bold,
+  const [ourfavs, setOurFavs] = useState('');  
+  const [usuemail, setUsuemail] = useState('');
+  const [usutoken, setUsutoken] = useState('');
+  const [usunombre, setUsunombre] = useState('');
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const spotify = Credentials();  
+  //insfav();
+      
+  //llamada API 
+  const favsfromapi = [];
+  
+  const llamadafavs = async () => {
+    let url = Url + "/albumes"
+    await axios(url, {
+      headers: {
+        'Content-Type' : 'application/json',
+      },
+      method: 'GET'
+    })
+    .then(res => {     
+            //console.log(res.data.albumes); 
+            albumfavs = res.data.albumes;
     });
-    
+    return albumfavs;
+  }
+  ;(async () => {
+  albumfavs = await llamadafavs();
+    albumfavs.forEach( (element2) => {
+      const object = {
+      title: element2.nombre,
+      artist: element2.artista,
+      source: element2.imagen
+      }
+    favsfromapi.push(object);
+   });
+    setOurFavs(favsfromapi);
+  })()
+
+
+    // cargamos local storage
   storage
   .load({
     key: 'loginState',
@@ -38,7 +72,19 @@ export default function Dashboard({ navigation }) {
   })
   .then(ret => {
     // found data go to then()
-    console.log(ret.useremail);
+    //console.log(ret.useremail);
+      let url = Url + "/usuarios?id=" + ret.uid;
+      axios(url, {
+        headers: {
+          'Content-Type' : 'application/json'
+        },
+        method: 'GET'
+      })
+      .then(res => {     
+
+      //setUsunombre(res.data.usuarios.username);
+
+            });
   })
   .catch(err => {
     // any exception including data not found
@@ -53,13 +99,24 @@ export default function Dashboard({ navigation }) {
         break;
     }
   });
+ 
+    
+  React.useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }, []);
+   if (isLoading) {
+    return <AppLoading />;
+  }
+  
   return (
       <View style={styles.Fondo}>
       <View style={styles.encabezado}>
       <PageHeader>Home</PageHeader>
       <Paragraph>
-       <Text>Welcome back <TouchableOpacity onPress={() => navigation.replace('')}>
-       <Text style={styles.link}>{username}</Text>
+       <Text>Welcome back<TouchableOpacity onPress={() => navigation.replace('')}>
+       <Text style={styles.link}>{usunombre}</Text>
         </TouchableOpacity>, this is what we have for you today!</Text>
       </Paragraph>
       </View>
@@ -70,6 +127,9 @@ export default function Dashboard({ navigation }) {
       >      
         <Text style={styles.Divtext}>Our favourite albums</Text>
       </LinearGradient>
+      <View>
+        <CustomSlider data={ourfavs} />
+      </View>
       
       </View>
   )
@@ -79,6 +139,7 @@ const styles = StyleSheet.create({
   Fondo:{
     backgroundColor: '#392F36',
     height: '100%',
+    fontFamily: 'Raleway_400Regular'
   },
   encabezado:{
     alignItems: 'center',
