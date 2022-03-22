@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
-import { TouchableOpacity, StyleSheet, View, MsgBox, Text, SafeAreaView   } from 'react-native'
+import { TouchableOpacity, StyleSheet, View, MsgBox, Text, SafeAreaView, ScrollView  } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
 import { Credentials } from '../helpers/credentials';
 import Background from '../components/Background'
@@ -16,6 +16,7 @@ import axios from 'axios';
 import {decode as atob, encode as btoa} from 'base-64'
 import { Url, usuemail } from '../global'
 import AppLoading from 'expo-app-loading';
+import SpotifyWebApi from "spotify-web-api-node";
 
 export default function Dashboard({ navigation }) {
   const [ourfavs, setOurFavs] = useState('');  
@@ -23,39 +24,82 @@ export default function Dashboard({ navigation }) {
   const [usutoken, setUsutoken] = useState('');
   const [usunombre, setUsunombre] = useState('');
   const [isLoading, setIsLoading] = React.useState(true);
+  const [news, setNews] = useState([]);
+  const [token, setToken] = useState('');  
 
   const spotify = Credentials();  
   //insfav();
       
   //llamada API 
   const favsfromapi = [];
-  
-  const llamadafavs = async () => {
-    let url = Url + "/albumes"
-    await axios(url, {
+  const newsfromapi = [];
+
+  var spotifyApi = new SpotifyWebApi({
+    clientId: 'd25870205635429285732c34594b8249',
+    clientSecret: '508413bf4ea24a26ad44b70d831ae2bc'
+  });
+
+
+  React.useEffect(() => {
+
+    axios('https://accounts.spotify.com/api/token', {
       headers: {
-        'Content-Type' : 'application/json',
+        'Content-Type' : 'application/x-www-form-urlencoded',
+        'Authorization' : 'Basic ' + btoa(spotify.ClientId + ':' + spotify.ClientSecret)      
       },
-      method: 'GET'
+      data: 'grant_type=client_credentials',
+      method: 'POST'
     })
-    .then(res => {     
-            //console.log(res.data.albumes); 
-            albumfavs = res.data.albumes;
+    .then(tokenResponse => {      
+      setToken(tokenResponse.data.access_token);
+      spotifyApi.setAccessToken(token);
+
+      axios('https://api.spotify.com/v1/browse/new-releases?limit=10', {
+        method: 'GET',
+        headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
+      })
+      .then (albumResponse => {        
+        //console.log(albumResponse.data.albums.items[0].name);
+        albumResponse.data.albums.items.forEach( (element2) => {
+          let spliuri = element2.uri.split(':');
+          let alid = spliuri[2];
+          const object = {
+          id: alid,
+          title: element2.name,
+          artist: element2.artists[0].name,
+          source: element2.images[0].url
+          }
+        newsfromapi.push(object);
+       });
+       setNews(newsfromapi);
+      });
+      console.log(newsfromapi);
+      
     });
-    return albumfavs;
-  }
-  ;(async () => {
-  albumfavs = await llamadafavs();
-    albumfavs.forEach( (element2) => {
-      const object = {
-      title: element2.nombre,
-      artist: element2.artista,
-      source: element2.imagen
+    const InsertaFavs = () => {
+      spotifyApi.setAccessToken(token);  
+      spotifyApi.getAlbums(['4KjbNbnTnJ97kZgQkOHr6v', '5LEXck3kfixFaA3CqVE7bC','6X1x82kppWZmDzlXXK3y3q','6SBkXTPlJ3oEaFwRm5o2lD','3hhDpPtCFuQbppwYgsVhMO','6c94J2yum9wHxmbSB27YXE','7D2NdGvBHIavgLhmcwhluK']).then(
+        function(albumResponse) {
+            albumResponse.body.albums.forEach( (element2) => {
+              let spliuri = element2.uri.split(':');
+              let alid = spliuri[2];
+              const object = {
+              id: alid,
+              title: element2.name,
+              artist: element2.artists[0].name,
+              source: element2.images[0].url
+              }
+            favsfromapi.push(object);
+           });
+           setOurFavs(favsfromapi);
+          },
+          function(err) {
+            console.error(err);
+          }
+        );
       }
-    favsfromapi.push(object);
-   });
-    setOurFavs(favsfromapi);
-  })()
+      InsertaFavs();
+  }, [spotify.ClientId, spotify.ClientSecret]); 
 
 
     // cargamos local storage
@@ -100,17 +144,9 @@ export default function Dashboard({ navigation }) {
     }
   });
  
-    
-  React.useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-   if (isLoading) {
-    return <AppLoading />;
-  }
   
   return (
+    <ScrollView>
       <View style={styles.Fondo}>
       <View style={styles.encabezado}>
       <PageHeader>Home</PageHeader>
@@ -128,10 +164,31 @@ export default function Dashboard({ navigation }) {
         <Text style={styles.Divtext}>Our favourite albums</Text>
       </LinearGradient>
       <View>
-        <CustomSlider data={ourfavs} />
+        <CustomSlider navigation={navigation}  data={ourfavs} />
+      </View>
+      <LinearGradient
+      // Button Linear Gradient
+      colors={['#5F1880', '#713b8c', '#392F36']}
+      style={styles.Banner}
+      >      
+        <Text style={styles.Divtext}>New From Friends</Text>
+      </LinearGradient>
+      <View>
+      </View>
+      <LinearGradient
+      // Button Linear Gradient
+      colors={['#5F1880', '#713b8c', '#392F36']}
+      style={styles.Banner}
+      >      
+        <Text style={styles.Divtext}>New Releases</Text>
+      </LinearGradient>
+      <View>
+        <CustomSlider navigation={navigation} data={news} />
       </View>
       
       </View>
+      </ScrollView>
+
   )
 }
 

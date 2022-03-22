@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 const Shcema = mongoose.Schema;
 
 const AlbumSchema = Schema({
+    id: {
+        type: String,
+        required: true,
+    },
     nombre: {
         type: String,
         required: true,

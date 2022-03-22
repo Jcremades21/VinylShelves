@@ -6,7 +6,7 @@ import { theme } from '../core/theme';
 function CarouselItem({ item, index }, parallaxProps) {
 
   return (
-    <Pressable onPress={() => alert('Image description:' + item.artist)}>
+    <Pressable onPress={() => parallaxProps.navigation.navigate('AlbumScreen')}>
       <SafeAreaView style={styles.item}>
         <ParallaxImage
           source={{ uri: item.source }} /* the source of the image */
@@ -14,10 +14,10 @@ function CarouselItem({ item, index }, parallaxProps) {
           style={styles.image}
           {...parallaxProps} /* pass in the necessary props */ 
         />
-            <Text style={styles.title} numberOfLines={2}>
+            <Text style={styles.title} numberOfLines={1}>
             {item.title}
             </Text>
-            <Text style={styles.artist} numberOfLines={2}>
+            <Text style={styles.artist} numberOfLines={1}>
             {item.artist}
             </Text>
         </SafeAreaView>
@@ -53,9 +53,6 @@ function CarouselItem({ item, index }, parallaxProps) {
           borderRadius: 5,
           backgroundColor: 'rgba(255, 255, 255, 0)',
           marginBottom: Platform.select({ ios: 0, android: 1 }), //handle rendering bug.
-          borderWidth: 1,
-          borderColor: 'white',
-          borderRadius: 10,
           height: 200,
         },
         image: {

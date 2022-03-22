@@ -10,7 +10,7 @@ export default function Button({ mode, style, ...props }) {
   return (
     <TouchableOpacity style={styles.FacebookStyle} activeOpacity={0.5}>
     <Image
-     source={require('../assets/twitteric.png')}
+     source={require('../assets/copy.png')}
      style={styles.ImageIconStyle}
     />
     </TouchableOpacity>
@@ -27,7 +27,8 @@ const styles = StyleSheet.create({
     height: 40
   },
   ImageIconStyle:{
-    width: 35,
-    height: 35,
+    width: 30,
+    height: 30,
+    marginLeft: 1
   }
 })

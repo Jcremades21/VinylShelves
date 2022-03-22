@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: 'Raleway_400Regular',
-    fontSize: 15,
-    lineHeight: 26,
+    lineHeight: 26
   },
 })

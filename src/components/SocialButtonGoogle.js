@@ -22,10 +22,12 @@ const styles = StyleSheet.create({
     borderWidth:1,
     borderColor:'rgba(0,0,0,0.1)',
     backgroundColor: '#473d44',
-    padding:3
+    padding:3,
+    width: 40,
+    height: 40
   },
   ImageIconStyle:{
-    width:40,
-    height: 40,
+    width: 35,
+    height: 35,
   }
 })
