@@ -11,7 +11,6 @@ const { width } = Dimensions.get("window");
 export default function CustomSlider({ data, navigation }) {
 
   function CarouselItem({ item, index }, parallaxProps) {
-
     return (
       <Pressable onPress={() => navigation.navigate('AlbumScreen', {id: item.id})}>
         <SafeAreaView style={styles.item}>

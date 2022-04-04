@@ -19,7 +19,7 @@ import SearchScreen from './src/screens/SearchScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import LandingScreen from './src/screens/LandingScreen';
 import AlbumScreen from './src/screens/AlbumScreen';
-import CarouselItem from './src/components/CarouselItem';
+import ReviewScreen from './src/screens/ReviewScreen';
 
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator();
@@ -175,6 +175,7 @@ export default function App() {
           <Stack.Screen name="Dashboard" component={HomeTabs} />
           <Stack.Screen name="Landing" component={LandingTabs} />
           <Stack.Screen name="AlbumScreen" component={AlbumScreen} />
+          <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}

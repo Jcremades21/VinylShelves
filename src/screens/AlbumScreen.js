@@ -8,6 +8,7 @@ import Header from '../components/Header'
 import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
 import CustomSlider from '../components/Carrousel'
+import CustomSlider2 from '../components/CarrouselReviews'
 import Button from '../components/Button'
 import storage from '.'
 import { theme } from '../core/theme'
@@ -27,7 +28,10 @@ import { Audio } from 'expo-av'
 import { Rating, AirbnbRating } from 'react-native-ratings';
 import { AntDesign } from '@expo/vector-icons'; 
 import Icon from "react-native-animated-icons"
-
+import { TextInput } from 'react-native-paper';
+import TextInputE from '../components/TextInput';
+import { showMessage, hideMessage } from "react-native-flash-message";
+import FlashMessage from "react-native-flash-message";
 
 import {
     useFonts,
@@ -40,15 +44,22 @@ import {
 
 export default function AlbumScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [token, setToken] = useState('');  
+  const [token, setToken] = useState(''); 
+  const [usutoken, setusuToken] = useState('');   
   const [album, setAlbum] = useState('');  
+  const [UID, setUsuUID] = useState('');  
   const [news, setNews] = useState([]);
+  const [reviewspop, setReviewspop] = useState([]);
   const [fecha, setFecha] = useState('');  
   const [audioTracks, setAudioTracks] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalRVisible, setModalRVisible] = useState(false);
   const [sound, setSound] = React.useState();
   const [audioStatus, setAudioStatus] = useState(true)
-
+  const [reviewTitle, setreviewTitle] = useState({ value: '', error: '' })
+  const [reviewText, setreviewText] = useState({ value: '', error: '' })
+  const [success, setSuccess] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
   const { id } = route.params;
 
     
@@ -141,6 +152,9 @@ export default function AlbumScreen({ navigation, route }) {
     function clickTracklist(){
       setModalVisible(true);
     }
+    function clickReview(){
+      setModalRVisible(true);
+    }
     function renderTracks() {
       if(audioTracks){
       return album.tracks.items.map((item) => (
@@ -149,11 +163,129 @@ export default function AlbumScreen({ navigation, route }) {
            paddingVertical: 4,
            marginLeft: 11,
            color: theme.colors.text,
-           fontSize: 17
+           fontSize: 17,
+           maxWidth: 240
           }
-         ]}>{item.track_number}. {item.name}</Text>{item.preview_url ?<TouchableOpacity onPress={() => playSound(item.name)} style={styles.iconPlay}>{audioStatus?<AntDesign name="playcircleo" size={24} color="white" />:<Ionicons name="md-stop-circle-outline" size={24} color="white" />}</TouchableOpacity>:null  }</View>
+         ]}>{item.track_number}. {item.name}</Text>{item.preview_url ?<TouchableOpacity onPress={() => playSound(item.name)} style={styles.iconPlay}>{audioStatus?<AntDesign name="playcircleo" size={24} color="white" />:<AntDesign name="playcircleo" size={24} color="white" />}</TouchableOpacity>:null  }</View>
      )) 
     }}
+    React.useEffect(() => {
+
+        storage
+        .load({
+        key: 'loginState',
+        autoSync: true,
+        syncInBackground: true,
+        syncParams: {
+          extraFetchOptions: {
+          },
+          someFlag: true
+        }
+        }).then(ret => {
+          // found data go to then()
+          //console.log(ret.useremail);  
+          setUsuUID(ret.uid);
+        })
+        .catch(err => {
+          // any exception including data not found
+          // goes to catch()
+          console.warn(err.message);
+          switch (err.name) {
+            case 'NotFoundError':
+              // TODO;
+              break;
+            case 'ExpiredError':
+              // TODO
+              break;
+          }
+        });
+       
+     }, []); 
+     React.useEffect(() => {
+      let array = [];
+      let url = Url + "/reviews/?album=" + id;
+      axios.get(url,
+          {
+              headers: { 'Content-Type': 'application/json',
+              'x-token' : token },
+              withCredentials: true
+          }
+      ).then((res) => {
+        spotifyApi.setAccessToken(token);  
+        res.data.reviews.forEach( (element) => {
+        
+        spotifyApi.getAlbum(element.album).then(
+          function(albumResponse) {
+              const data = {
+                albumimg: albumResponse.body.images[0].url,
+                albumname: albumResponse.body.name,
+                albumartist: albumResponse.body.artists[0].name,
+                usuimg: element.usuario.imagen,
+                titulo: element.titulo,
+                texto: element.texto,
+                likes: element.likes.length,
+                comments: '0',
+                val: '5',
+              }
+              array.push(data);
+              console.log(albumResponse.body.images[0].url);
+            },
+            function(err) {
+              console.error(err);
+            }
+          );
+        });
+      })
+      .catch((error) => {
+        console.error(error)
+      });
+      setReviewspop(array); 
+    }, []); 
+
+    const onReviewPressed = () => {
+      if(token){
+      try {
+        let titleform = reviewTitle.value;
+        let textform = reviewText.value;
+        const data = {
+          titulo : titleform,
+          texto : textform,
+          usuario : UID,
+          album: album.id,
+          artista: album.artists[0].id
+        }
+        let url = Url + "/reviews";
+        axios.post(url,
+            data,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : token },
+                withCredentials: true
+            }
+        ).then((res) => {
+          console.log(res.data.review.uid);
+          setModalRVisible(false);
+          setreviewText('');
+          setreviewTitle('');
+          showMessage({
+            message: "Review added to your collection!",
+            type: "success",
+            icon: "success",
+            onPress: () => {
+              navigation.navigate('ReviewScreen', {id: res.data.review.uid})
+            },
+          });
+          
+        })
+        .catch((error) => {
+          console.error(error)
+        });
+        
+    } catch (err) {
+        console.log(err);
+      }
+      }
+    }
     if (!fontsLoaded) {
     return <AppLoading />
   }
@@ -163,8 +295,62 @@ export default function AlbumScreen({ navigation, route }) {
   };
 
   return (
-    
       <View style={styles.Fondo}>
+        <ScrollView>
+        <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalRVisible}
+        onRequestClose={() => {
+          setModalRVisible(!modalRVisible);
+        }}
+      >
+        <View style={[styles.centeredView,modalBackgroundStyle]}>
+        <ScrollView>
+          <View style={styles.modalView}>
+            <View style={styles.reviewView}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              color: theme.colors.text,
+              fontSize: 15
+              }
+            ]}>Add a review of...</Text>
+            <View style={styles.Info2}>
+            <Text style={styles.Infoname}>{album.name}</Text>
+            {album ? <Text style={styles.Infoart}>{album.artists[0].name}</Text>:null } 
+            <Text style={styles.Infoart}>{fecha}</Text>
+            </View>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Title</Text>
+            <TextInputE value={reviewTitle.value}
+            onChangeText={(text) => setreviewTitle({ value: text, error: '' })}></TextInputE>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Review</Text>
+            <TextInput style={styles.input} multiline={true}
+            numberOfLines={8} value={reviewText.value}
+            onChangeText={(text) => setreviewText({ value: text, error: '' })}></TextInput>
+            <Button
+              mode="contained"
+              onPress={onReviewPressed}
+              >
+                Save
+              </Button>
+            </View>
+          </View>
+        
+          </ScrollView>
+        </View>
+      </Modal>
         <Modal
         animationType="fade"
         transparent={true}
@@ -203,6 +389,7 @@ export default function AlbumScreen({ navigation, route }) {
       <BackButton goBack={navigation.goBack} />
       <View style={styles.encabezado}>
       <PageHeader>Album details</PageHeader>
+      <FlashMessage position="top" />
       </View>
       <View style={styles.TopBanner}>
       <View style={styles.Info}>
@@ -232,10 +419,13 @@ export default function AlbumScreen({ navigation, route }) {
           imageSize={26}
           style={{ paddingVertical: 2, marginBottom: 8}}
         />
-      <Button style={styles.buttonRev}> <Text style={[
-       { fontFamily:'Raleway_400Regular',lineHeight: 19,
-      color: theme.colors.text }
-      ]}>Review</Text></Button>
+        {UID ? <Button  onPress={() => clickReview()} style={styles.buttonRev}> <Text style={[
+        { fontFamily:'Raleway_400Regular',lineHeight: 19,
+        color: theme.colors.text }
+        ]}>Review</Text></Button>: <Button onPress={() => navigation.navigate('LoginScreen')} style={styles.buttonRev}> <Text style={[
+        { fontFamily:'Raleway_400Regular',lineHeight: 19,
+       color: theme.colors.text }
+       ]}>Review</Text></Button>}
       <Button style={styles.buttonRev}> <Text style={[
        { fontFamily:'Raleway_400Regular',    
        fontSize: 9, lineHeight: 19,
@@ -268,14 +458,40 @@ export default function AlbumScreen({ navigation, route }) {
       >      
         <Text style={styles.Divtext}>Popular Reviews</Text>
       </LinearGradient>
+      {reviewspop.length > 0 && <View>
+      { reviewspop ? <CustomSlider2 navigation={navigation} data={reviewspop} />:null}
+      </View> }
+      {reviewspop.length == 0 && <View>
+        <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 14,
+              alignSelf: 'center'
+              }
+        ]}>Seems like there are no reviews yet...</Text>
+      </View> }
   <View>
   </View>
+  </ScrollView>
       </View>
   )
   
 }
 
 const styles = StyleSheet.create({
+  input:{
+    backgroundColor: 'rgba(248, 34, 34, 0.25)',
+    color: theme.colors.text,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(217, 15, 200, 0.55)',
+    borderRadius: 10,
+    padding: 6,
+    marginTop: 6,
+    marginBottom: 16,
+    fontFamily:'Raleway_400Regular'
+  },
   iconPlay:{
     padding: 5
   },
@@ -285,7 +501,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     flexDirection: 'row',
     justifyContent:'space-between',
-
+    borderRadius: 5
   },
   centeredView:{
     height: '100%'
@@ -360,6 +576,11 @@ const styles = StyleSheet.create({
   Info:{
     alignItems: 'center',
     width:'55%'
+  },
+  Info2:{
+    alignItems: 'center',
+    width:'95%',
+    paddingVertical: 10
   },
   Infoname:{
     fontSize: 16,

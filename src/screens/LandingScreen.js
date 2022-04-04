@@ -8,6 +8,7 @@ import Header from '../components/Header'
 import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
 import CustomSlider from '../components/Carrousel'
+import CustomSlider2 from '../components/CarrouselReviews'
 import Button from '../components/Button'
 import storage from '.'
 import { theme } from '../core/theme'
@@ -33,6 +34,7 @@ export default function Landing({ navigation }) {
   const [pops, setPops] = useState([]);
   const [news, setNews] = useState([]);
   const [token, setToken] = useState('');  
+  const [reviews, setReviews] = useState([]);   
 
   const spotify = Credentials();  
   //insfav();
@@ -137,7 +139,49 @@ export default function Landing({ navigation }) {
         InsertaPops();
         InsertaFavs();
     }, [spotify.ClientId, spotify.ClientSecret]); 
- 
+
+    React.useEffect(() => {
+      let array = [];
+      let url = Url + "/reviews";
+      axios.get(url,
+          {
+              headers: { 'Content-Type': 'application/json',
+              'x-token' : token },
+              withCredentials: true
+          }
+      ).then((res) => {
+        spotifyApi.setAccessToken(token);  
+        res.data.reviews.forEach( (element) => {
+        
+        spotifyApi.getAlbum(element.album).then(
+          function(albumResponse) {
+              const data = {
+                id: element.uid,
+                albumimg: albumResponse.body.images[0].url,
+                albumname: albumResponse.body.name,
+                albumartist: albumResponse.body.artists[0].name,
+                usuimg: element.usuario.imagen,
+                titulo: element.titulo,
+                texto: element.texto,
+                likes: element.likes.length,
+                comments: element.comentarios.length,
+                val: '5',
+              }
+              array.push(data);
+              console.log(albumResponse.body.images[0].url);
+            },
+            function(err) {
+              console.error(err);
+            }
+          );
+        });
+      })
+      .catch((error) => {
+        console.error(error)
+      });
+      setReviews(array); 
+    }, []); 
+
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
@@ -196,6 +240,7 @@ export default function Landing({ navigation }) {
         <Text style={styles.Divtext}>Popular reviews</Text>
       </LinearGradient> 
       <View>
+      { reviews ? <CustomSlider2 navigation={navigation} data={reviews} />:null}
       </View>
       <LinearGradient
       // Button Linear Gradient

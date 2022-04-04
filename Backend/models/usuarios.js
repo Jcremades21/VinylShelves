@@ -18,7 +18,8 @@ const UsuarioSchema = Schema({
         required: true
     },
     imagen: {
-        type: String
+        type: String,
+        default: 'https://sicau.pascualbravo.edu.co/SICAU/Sources/fotos/usuario.png'
     },
     activo: {
         type: Boolean,

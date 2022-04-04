@@ -8,6 +8,7 @@ import Header from '../components/Header'
 import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
 import CustomSlider from '../components/Carrousel'
+import CustomSlider2 from '../components/CarrouselReviews'
 import Button from '../components/Button'
 import storage from '.'
 import { ParallaxImage } from 'react-native-snap-carousel';
@@ -17,9 +18,18 @@ import {decode as atob, encode as btoa} from 'base-64'
 import { Url, usuemail } from '../global'
 import AppLoading from 'expo-app-loading';
 import SpotifyWebApi from "spotify-web-api-node";
+import {
+  useFonts,
+  Raleway_300Light,
+  Raleway_400Regular,
+  Raleway_700Bold,
+  Raleway_300Light_Italic,
+  Raleway_400Regular_Italic,
+} from '@expo-google-fonts/raleway';
 
 export default function Dashboard({ navigation }) {
-  const [ourfavs, setOurFavs] = useState('');  
+  const [ourfavs, setOurFavs] = useState([]); 
+  const [reviews, setReviews] = useState([]);   
   const [usuemail, setUsuemail] = useState('');
   const [usutoken, setUsutoken] = useState('');
   const [usunombre, setUsunombre] = useState('');
@@ -29,7 +39,10 @@ export default function Dashboard({ navigation }) {
 
   const spotify = Credentials();  
   //insfav();
-      
+  let [fontsLoaded] = useFonts({
+    Raleway_400Regular,
+    Raleway_700Bold,
+    });
   //llamada API 
   const favsfromapi = [];
   const newsfromapi = [];
@@ -71,6 +84,7 @@ export default function Dashboard({ navigation }) {
           }
         newsfromapi.push(object);
        });
+       
        setNews(newsfromapi);
       });
       console.log(newsfromapi);
@@ -103,6 +117,7 @@ export default function Dashboard({ navigation }) {
 
 
     // cargamos local storage
+  React.useEffect(() => {
   storage
   .load({
     key: 'loginState',
@@ -125,9 +140,8 @@ export default function Dashboard({ navigation }) {
         method: 'GET'
       })
       .then(res => {     
-
-      //setUsunombre(res.data.usuarios.username);
-
+      setUsutoken(res.data.token)
+      setUsunombre(res.data.usuarios.username);
             });
   })
   .catch(err => {
@@ -143,7 +157,54 @@ export default function Dashboard({ navigation }) {
         break;
     }
   });
- 
+  }, []); 
+
+   React.useEffect(() => {
+    let array = [];
+    let url = Url + "/reviews";
+    axios.get(url,
+        {
+            headers: { 'Content-Type': 'application/json',
+            'x-token' : token },
+            withCredentials: true
+        }
+    ).then((res) => {
+      spotifyApi.setAccessToken(token);  
+      res.data.reviews.forEach( (element) => {
+      
+      spotifyApi.getAlbum(element.album).then(
+        function(albumResponse) {
+            const data = {
+              id: element.uid,
+              albumimg: albumResponse.body.images[0].url,
+              albumname: albumResponse.body.name,
+              albumartist: albumResponse.body.artists[0].name,
+              usuimg: element.usuario.imagen,
+              titulo: element.titulo,
+              texto: element.texto,
+              likes: element.likes.length,
+              comments: element.comentarios.length,
+              val: '5',
+            }
+            array.push(data);
+            console.log(albumResponse.body.images[0].url);
+          },
+          function(err) {
+            console.error(err);
+          }
+        );
+      });
+    })
+    .catch((error) => {
+      console.error(error)
+    });
+    setReviews(array); 
+  }, []); 
+
+
+  if (isLoading && !fontsLoaded) {
+    return <AppLoading />;
+  }
   
   return (
     <ScrollView>
@@ -151,9 +212,9 @@ export default function Dashboard({ navigation }) {
       <View style={styles.encabezado}>
       <PageHeader>Home</PageHeader>
       <Paragraph>
-       <Text>Welcome back<TouchableOpacity onPress={() => navigation.replace('')}>
-       <Text style={styles.link}>{usunombre}</Text>
-        </TouchableOpacity>, this is what we have for you today!</Text>
+       <Text style={styles.welcome}>Welcome back {usunombre ?<TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+       <Text style={styles.link}>{usunombre} </Text></TouchableOpacity>: null} </Text>
+       <Text style={styles.welcome}> this is what we have for you today!</Text>
       </Paragraph>
       </View>
       <LinearGradient
@@ -164,15 +225,17 @@ export default function Dashboard({ navigation }) {
         <Text style={styles.Divtext}>Our favourite albums</Text>
       </LinearGradient>
       <View>
-        <CustomSlider navigation={navigation}  data={ourfavs} />
+        <CustomSlider navigation={navigation} data={ourfavs} />
       </View>
       <LinearGradient
       // Button Linear Gradient
       colors={['#5F1880', '#713b8c', '#392F36']}
       style={styles.Banner}
       >      
-        <Text style={styles.Divtext}>New From Friends</Text>
+        <Text style={styles.Divtext}>Popular albums</Text>
       </LinearGradient>
+      <View>
+      </View>
       <View>
       </View>
       <LinearGradient
@@ -181,14 +244,31 @@ export default function Dashboard({ navigation }) {
       style={styles.Banner}
       >      
         <Text style={styles.Divtext}>New Releases</Text>
-      </LinearGradient>
+      </LinearGradient> 
       <View>
-        <CustomSlider navigation={navigation} data={news} />
+      <CustomSlider navigation={navigation} data={news} />
       </View>
-      
+      <LinearGradient
+      // Button Linear Gradient
+      colors={['#5F1880', '#713b8c', '#392F36']}
+      style={styles.Banner}
+      >      
+        <Text style={styles.Divtext}>Popular reviews</Text>
+      </LinearGradient> 
+      <View>
+      { reviews ? <CustomSlider2 navigation={navigation} data={reviews} />:null}
       </View>
-      </ScrollView>
-
+      <LinearGradient
+      // Button Linear Gradient
+      colors={['#5F1880', '#713b8c', '#392F36']}
+      style={styles.Banner}
+      >      
+        <Text style={styles.Divtext}>Popular Users</Text>
+      </LinearGradient> 
+      <View>
+      </View>
+      </View>
+    </ScrollView>
   )
 }
 
@@ -220,6 +300,13 @@ const styles = StyleSheet.create({
   Divtext:{
     fontSize: 17,
     marginTop: 16,
-    color: theme.colors.text
+    color: theme.colors.text,
+    fontFamily:'Raleway_400Regular' 
+  },
+  welcome:{
+    fontSize: 15,
+    marginTop: 16,
+    color: theme.colors.text,
+    fontFamily:'Raleway_400Regular' 
   }
 })

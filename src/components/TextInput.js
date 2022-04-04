@@ -31,8 +31,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginTop: 6,
-    fontFamily:'Raleway_400Regular'
-      
+    fontFamily:'Raleway_400Regular'  
   },
   description: {
     fontSize: 13,

@@ -52,7 +52,7 @@ export default function RegisterScreen({ navigation }) {
     else{
       console.log(JSON.stringify(nameform));
       try {
-        axios.post('http://192.168.1.33:3000/api/usuarios',
+        axios.post('http://192.168.1.39:3000/api/usuarios',
             data,
             {
                 headers: { 'Content-Type': 'application/json' },
