@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext, Component  } from 'react'
-import { Alert, TouchableOpacity, StyleSheet, View, Modal, MsgBox, Text, SafeAreaView, ScrollView, Image, Pressable } from 'react-native'
+import { Alert, CheckBox, TouchableOpacity, StyleSheet, View, Modal, MsgBox, Text, SafeAreaView, ScrollView, Image, Pressable } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
 import { Credentials } from '../helpers/credentials';
 import Background from '../components/Background'
@@ -35,11 +35,61 @@ import { Entypo } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons'; 
 import moment from 'moment'
 import { Fontisto } from '@expo/vector-icons'; 
-
+import CustomSlider3 from '../components/CarrouselList';
  
 
 export default function ListsScreen({ navigation }) {
     const [usutoken, setUsutoken] = useState('');  
+    const [ourPicks, setourPicks] = useState([]);
+    const [populars, setPopulars] = useState([]);
+    const [newest, setnewest] = useState([]);
+
+    const [token, setToken] = useState(''); 
+    const [isLoading, setIsLoading] = useState(''); 
+
+    React.useEffect(() => {
+        let arrayalb = [];
+        let arraypicks = ['624e19bbe7e89afefd9ac6ab','625197b5259b95f536005633','62519c9761bab283a270320a'];
+        arraypicks.forEach( (element) => {
+        let url = Url + "/listal?id=" + element;
+        axios.get(url,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : token },
+                withCredentials: true
+            }
+        ).then((res) => {   
+          //console.log(res.data);
+          arrayalb.push(res.data.listas);
+        })
+        .catch((error) => {
+          console.error(error)
+            });
+        });
+        setourPicks(arrayalb);
+        //console.log(ourPicks);
+      },[]); 
+
+      React.useEffect(() => {
+        let arrayalb = [];
+        let url = Url + "/listal";
+        axios.get(url,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : token },
+                withCredentials: true
+            }
+        ).then((res) => {   
+          arrayalb = res.data.listas.sort((a, b) => (a.likes.length + a.comentarios.length) > (b.likes.length + b.comentarios.length)  ? 1 : -1)
+          arrayalb.slice(0, 6);
+          console.log(arrayalb);
+          setPopulars(arrayalb);
+        })
+        .catch((error) => {
+          console.error(error)
+            });
+        //console.log(populars);
+      },[]); 
 
     React.useEffect(() => {
         storage
@@ -73,23 +123,32 @@ export default function ListsScreen({ navigation }) {
         });
     }, []); 
 
+    setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
+    if(isLoading) {
+        return null;
+    }
     return (
         <View style={styles.Fondo}>
+            
         <ScrollView>
         <View style={styles.encabezado}>
         <PageHeader>Lists</PageHeader>
-         <FlashMessage position="top" />
          </View>
          <View>
-         {usutoken ? <Button mode="contained" style={styles.buttonTrack}><Entypo name="add-to-list" size={15} color="white" /><Text> </Text> Start your own list</Button>:<TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}><Text style={styles.link2}>Log In here to start creating lists</Text></TouchableOpacity>}
+         {usutoken ? <Button mode="contained" style={styles.buttonTrack} onPress={() => navigation.navigate('NewListScreen', {id: '', nombre: '', artista: '', release_date: '', imagen: '', release_date_precision: '' })}><Entypo name="add-to-list" size={15} color="white" /><Text> </Text> Start your own list</Button>:<TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}><Text style={styles.link2}>Log In here to start creating lists</Text></TouchableOpacity>}
          </View>
          <LinearGradient
             // Button Linear Gradient
             colors={['#5F1880', '#713b8c', '#392F36']}
             style={styles.Banner}
             >      
-                <Text style={styles.Divtext}>Our picks</Text>
+            <Text style={styles.Divtext}>Our picks</Text>
             </LinearGradient> 
+            <View>
+            { ourPicks ? <CustomSlider3 navigation={navigation} data={ourPicks} />:null}
+            </View>
             <LinearGradient
             // Button Linear Gradient
             colors={['#5F1880', '#713b8c', '#392F36']}
@@ -97,16 +156,21 @@ export default function ListsScreen({ navigation }) {
             >      
                 <Text style={styles.Divtext}>Popular this week</Text>
             </LinearGradient> 
+            <View>
+            { populars ? <CustomSlider3 navigation={navigation} data={populars} />:null}
+            </View>
             <LinearGradient
             // Button Linear Gradient
             colors={['#5F1880', '#713b8c', '#392F36']}
             style={styles.Banner}
             >      
-                <Text style={styles.Divtext}>Newest lists</Text>
+               {usutoken ? <Text style={styles.Divtext}>New from friends</Text>:<Text style={styles.Divtext}>All time favourites</Text>}
             </LinearGradient> 
         </ScrollView>
         </View>
     );
+    
+    
 }
 
 const styles = StyleSheet.create({
@@ -125,7 +189,7 @@ const styles = StyleSheet.create({
     Banner: {
         backgroundColor: '#fff',
         height: 60,
-        marginTop: 10,
+        marginTop: 0,
         alignItems: 'center'
     },
     Divtext:{

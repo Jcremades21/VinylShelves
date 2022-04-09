@@ -22,6 +22,9 @@ const ListarSchema = Schema({
     likes:[ {
         type: String
     }],
+    public: {
+        type: Boolean
+    },
     descripcion: {
         type: String
     },

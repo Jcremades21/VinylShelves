@@ -34,7 +34,7 @@ const obtenerListas = async(req, res) => {
         if (id) {
 
             [listas, total] = await Promise.all([
-                Lista.findById(id).populate('array', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
+                Lista.findById(id).populate('usuario', '-__v').populate('comentarios', '-__v').populate('array', '-__v'),
                 Lista.countDocuments()
             ]);
 
@@ -43,13 +43,13 @@ const obtenerListas = async(req, res) => {
         else {
             if (texto) {
                 [listas, total] = await Promise.all([
-                    Lista.find({ $or: [{ titulo: textoBusqueda }, { texto: textoBusqueda }] }).skip(desde).limit(registropp).populate('array', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
-                    Lista.countDocuments({ $or: [{ titulo: textoBusqueda}, { texto: textoBusqueda }] })
+                    Lista.find({ $or: [{ titulo: textoBusqueda }] }).skip(desde).populate('array', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
+                    Lista.countDocuments({ $or: [{ titulo: textoBusqueda}] })
                 ]);
             } 
             else {
                 [listas, total] = await Promise.all([
-                    Lista.find({}).skip(desde).limit(registropp).populate('album', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
+                    Lista.find({}).skip(desde).populate('usuario', '-__v').populate('comentarios', '-__v').populate('array', '-__v'),
                     Lista.countDocuments()
                 ]);
             }

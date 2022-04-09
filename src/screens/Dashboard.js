@@ -232,7 +232,7 @@ export default function Dashboard({ navigation }) {
       colors={['#5F1880', '#713b8c', '#392F36']}
       style={styles.Banner}
       >      
-        <Text style={styles.Divtext}>Popular albums</Text>
+        <Text style={styles.Divtext}>New from friends</Text>
       </LinearGradient>
       <View>
       </View>

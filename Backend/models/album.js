@@ -18,8 +18,12 @@ const AlbumSchema = Schema({
     imagen: {
         type: String
     },
-    fechasalida: {
-        type: Date
+    release_date: {
+        type: String
+    },
+    popularity: {
+        type: Number,
+        default: 0
     },
     label: {
         type: String

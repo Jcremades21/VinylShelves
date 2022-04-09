@@ -25,7 +25,6 @@ router.put('/:id', [
     validarRol
 ], actualizarLista);
 router.delete('/:id', [
-    validarJWT,
     check('id', 'El identificador no es válido').isMongoId(),
     validarCampos
 ], borrarLista);

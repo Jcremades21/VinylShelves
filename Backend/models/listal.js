@@ -19,6 +19,9 @@ const ListalSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Usuario'
     },
+    public: {
+        type: Boolean
+    },
     likes:[ {
         type: String
     }],

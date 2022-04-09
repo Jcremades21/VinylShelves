@@ -157,8 +157,8 @@ export default function AlbumScreen({ navigation, route }) {
     }
     function renderTracks() {
       if(audioTracks){
-      return album.tracks.items.map((item) => (
-        <View style={styles.trackDiv}><Text style={[
+      return album.tracks.items.map((item, i) => (
+        <View key={i} style={styles.trackDiv}><Text style={[
           { fontFamily:'Raleway_400Regular',
            paddingVertical: 4,
            marginLeft: 11,
@@ -386,10 +386,9 @@ export default function AlbumScreen({ navigation, route }) {
           </ScrollView>
         </View>
       </Modal>
-      <BackButton goBack={navigation.goBack} />
       <View style={styles.encabezado}>
+      <BackButton goBack={navigation.goBack} />
       <PageHeader>Album details</PageHeader>
-      <FlashMessage position="top" />
       </View>
       <View style={styles.TopBanner}>
       <View style={styles.Info}>
@@ -426,11 +425,14 @@ export default function AlbumScreen({ navigation, route }) {
         { fontFamily:'Raleway_400Regular',lineHeight: 19,
        color: theme.colors.text }
        ]}>Review</Text></Button>}
-      <Button style={styles.buttonRev}> <Text style={[
+      {UID ?<Button  onPress={() => navigation.navigate('AddtolistScreen', {id: album.id, name: album.name, release_date_precision: album.release_date_precision, release_date: album.release_date, imagen: album.images[0].url, artista: album.artists[0].name})} style={styles.buttonRev}> <Text style={[
        { fontFamily:'Raleway_400Regular',    
        fontSize: 9, lineHeight: 19,
       color: theme.colors.text }
-      ]}>Add to a List</Text></Button>
+      ]}>Add to a List</Text></Button>: <Button onPress={() => navigation.navigate('LoginScreen')} style={styles.buttonRev}> <Text style={[
+        { fontFamily:'Raleway_400Regular',lineHeight: 19,
+       color: theme.colors.text, fontSize: 9 }
+       ]}>Add to a List</Text></Button>}
       <View style={styles.shareDiv}>
         <ClipboardButton style={styles.share}></ClipboardButton>
         <SocialButtonFacebook style={styles.share}></SocialButtonFacebook>
@@ -537,12 +539,13 @@ const styles = StyleSheet.create({
   TrackListDiv: {
     width: '100%'
     },
-  encabezado:{
-    alignItems: 'center',
-    width: '75%',
-    alignSelf: 'center',
-    marginTop: 30,
-    fontFamily:'Raleway_400Regular' 
+    encabezado:{
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',   
+      marginTop: 30,
+      fontFamily:'Raleway_400Regular',
+      justifyContent: 'center'
   },
   link:{
     fontFamily: 'Raleway_700Bold',

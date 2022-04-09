@@ -7,6 +7,8 @@ import { theme } from './src/core/theme'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import storage from './src/screens';
 import AppLoading from 'expo-app-loading';
+import { showMessage, hideMessage } from "react-native-flash-message";
+import FlashMessage from "react-native-flash-message";
 
 import {
   LoginScreen,
@@ -20,6 +22,9 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import LandingScreen from './src/screens/LandingScreen';
 import AlbumScreen from './src/screens/AlbumScreen';
 import ReviewScreen from './src/screens/ReviewScreen';
+import NewListScreen from './src/screens/NewListScreen';
+import DetailListScreen from './src/screens/DetailListScreen'; 
+import AddtolistScreen from './src/screens/AddtolistScreen'; 
 
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator();
@@ -176,13 +181,17 @@ export default function App() {
           <Stack.Screen name="Landing" component={LandingTabs} />
           <Stack.Screen name="AlbumScreen" component={AlbumScreen} />
           <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
+          <Stack.Screen name="NewListScreen" component={NewListScreen} />
+          <Stack.Screen name="DetailListScreen" component={DetailListScreen} />
+          <Stack.Screen name="AddtolistScreen" component={AddtolistScreen} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}
           />
         </Stack.Navigator>
 
-        
+        <FlashMessage position="top" />
+
       </NavigationContainer>
     </Provider>
   )

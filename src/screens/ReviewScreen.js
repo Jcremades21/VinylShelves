@@ -121,61 +121,6 @@ export default function ReviewScreen({ navigation, route }) {
 
 
     React.useEffect(() => {
-        let array = [];
-        let arraycom = [];
-        let url = Url + "/reviews/?id=" + id;
-        axios.get(url,
-            {
-                headers: { 'Content-Type': 'application/json',
-                'x-token' : token },
-                withCredentials: true
-            }
-        ).then((res) => {   
-          res.data.reviews.comentarios.forEach( (element) => {
-          let url = Url + "/comentarios/?id=" + element;
-            axios.get(url,
-                {
-                    headers: { 'Content-Type': 'application/json',
-                    'x-token' : token },
-                    withCredentials: true
-                }
-              ).then((res) => {
-                arraycom.push(res.data.comentarios);
-                setArraycoms(arraycom);
-              });
-            });
-          setInter(moment.utc(res.data.reviews.fecha).local().startOf('seconds').fromNow());
-          setreviewTitle({ value: res.data.reviews.titulo, error: '' });
-          setreviewText({ value: res.data.reviews.texto, error: '' });
-          spotifyApi.setAccessToken(token); 
-          console.log(res.data.reviews.usuario.username);
-          setReview(res.data.reviews); 
-          res.data.reviews.likes.forEach( (element2) => {
-            if(element2 == UID){
-                setLiked(true);
-            }
-          });
-          spotifyApi.getAlbum(res.data.reviews.album).then(
-            function(albumResponse) {
-                setAlbum(albumResponse.body);
-                if(albumResponse.body.release_date_precision!='year'){
-                    let split = albumResponse.body.release_date.split('-');
-                    setFecha(split[0]);
-                  }
-              },
-              function(err) {
-                console.error(err);
-              }
-            );
-
-        })
-        .catch((error) => {
-          console.error(error)
-        });
-        
-      }, [load]); 
-    
-    React.useEffect(() => {
 
         storage
         .load({
@@ -192,10 +137,110 @@ export default function ReviewScreen({ navigation, route }) {
           //console.log(ret.useremail);  
           setUsuUID(ret.uid);
           setToken(ret.token);
+          let array = [];
+          let arraycom = [];
+          let url = Url + "/reviews/?id=" + id;
+          axios.get(url,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : token },
+                  withCredentials: true
+              }
+          ).then((res) => {   
+            res.data.reviews.comentarios.forEach( (element) => {
+            let url = Url + "/comentarios/?id=" + element._id;
+              axios.get(url,
+                  {
+                      headers: { 'Content-Type': 'application/json',
+                      'x-token' : token },
+                      withCredentials: true
+                  }
+                ).then((res) => {
+                  console.log(res.data);
+                  arraycom.push(res.data.comentarios);
+                  setArraycoms(arraycom);
+                });
+              });
+            setInter(moment.utc(res.data.reviews.fecha).local().startOf('seconds').fromNow());
+            setreviewTitle({ value: res.data.reviews.titulo, error: '' });
+            setreviewText({ value: res.data.reviews.texto, error: '' });
+            spotifyApi.setAccessToken(token); 
+            console.log(res.data.reviews.usuario.username);
+            setReview(res.data.reviews); 
+            res.data.reviews.likes.forEach( (element2) => {
+              if(element2 == ret.uid){
+                  setLiked(true);
+              }
+            });
+            spotifyApi.getAlbum(res.data.reviews.album).then(
+              function(albumResponse) {
+                  setAlbum(albumResponse.body);
+                  if(albumResponse.body.release_date_precision!='year'){
+                      let split = albumResponse.body.release_date.split('-');
+                      setFecha(split[0]);
+                    }
+                },
+                function(err) {
+                  console.error(err);
+                }
+              );
+  
+          })
+          .catch((error) => {
+            console.error(error)
+          });
         })
         .catch(err => {
           // any exception including data not found
           // goes to catch()
+          let array = [];
+          let arraycom = [];
+          let url = Url + "/reviews/?id=" + id;
+          axios.get(url,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : token },
+                  withCredentials: true
+              }
+          ).then((res) => {   
+            res.data.reviews.comentarios.forEach( (element) => {
+            let url = Url + "/comentarios/?id=" + element._id;
+              axios.get(url,
+                  {
+                      headers: { 'Content-Type': 'application/json',
+                      'x-token' : token },
+                      withCredentials: true
+                  }
+                ).then((res) => {
+                  console.log(res.data);
+                  arraycom.push(res.data.comentarios);
+                  setArraycoms(arraycom);
+                });
+              });
+            setInter(moment.utc(res.data.reviews.fecha).local().startOf('seconds').fromNow());
+            setreviewTitle({ value: res.data.reviews.titulo, error: '' });
+            setreviewText({ value: res.data.reviews.texto, error: '' });
+            spotifyApi.setAccessToken(token); 
+            console.log(res.data.reviews.usuario.username);
+            setReview(res.data.reviews); 
+
+            spotifyApi.getAlbum(res.data.reviews.album).then(
+              function(albumResponse) {
+                  setAlbum(albumResponse.body);
+                  if(albumResponse.body.release_date_precision!='year'){
+                      let split = albumResponse.body.release_date.split('-');
+                      setFecha(split[0]);
+                    }
+                },
+                function(err) {
+                  console.error(err);
+                }
+              );
+  
+          })
+          .catch((error) => {
+            console.error(error)
+          });
           console.warn(err.message);
           switch (err.name) {
             case 'NotFoundError':
@@ -207,7 +252,7 @@ export default function ReviewScreen({ navigation, route }) {
           }
         });
        
-     }, []); 
+     }, [load]); 
 
      function addLike(){
       let url3 = Url + "/reviews/" + id;
@@ -353,8 +398,7 @@ export default function ReviewScreen({ navigation, route }) {
         }
         }
     }
-    React.useEffect(() => {
-    }, []); 
+
     function deleteComment() {
 
     }
@@ -567,18 +611,17 @@ export default function ReviewScreen({ navigation, route }) {
         </View>
       </Modal>
       <ScrollView>
-      <BackButton goBack={navigation.goBack} />
       <View style={styles.encabezado}>
+      <BackButton goBack={navigation.goBack} />
       {review.usuario && inter ? <><PageHeader
           >{review.usuario.username}'s review </PageHeader><View style={[
             { paddingHorizontal: 10 }
           ]}>{UID == review.usuario._id && <><TouchableOpacity onPress={clickDelete}><Entypo name="trash" size={24} color="white" /></TouchableOpacity></>}</View></>:null}
-      <FlashMessage position="top" />
       </View>
       <View style={styles.TopBanner}>
       <View style={styles.TopBanner}>
       <View style={styles.Info}>
-      <Text style={styles.Infoname}>{album.name}</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('AlbumScreen', {id: album.id})}><Text style={styles.Infoname}>{album.name}</Text></TouchableOpacity>
       {album ? <Text style={styles.Infoart}>{album.artists[0].name}</Text>:null } 
       <Text style={styles.Infoart}>{fecha}</Text>
       <Paragraph style={styles.Infoval}>
@@ -590,7 +633,7 @@ export default function ReviewScreen({ navigation, route }) {
       </View>
       <View style={styles.rateandtrackdiv}>
       <View style={styles.RateDiv}>
-      {album ?<Image source={{ uri: album.images[0].url }} style={styles.image}></Image>:null } 
+      {album ? <TouchableOpacity onPress={() => navigation.navigate('AlbumScreen', {id: album.id})}><Image source={{ uri: album.images[0].url }} style={styles.image}></Image></TouchableOpacity>:null } 
       </View>
          </View>
         </View>
@@ -653,7 +696,7 @@ export default function ReviewScreen({ navigation, route }) {
           <Feather name="bell" size={24} color="white" /> 
           </View>  
         </View>
-        {review.comentarios ?<View>{renderComments()}</View>:null }
+        {review.comentarios && arraycoms ? <View>{renderComments()}</View>:null }
         <View style={styles.addcDiv}>
           <Text style={styles.Infoname2}>Add a comment</Text>
           { UID ? <TextInput onChangeText={(text) => setComment({ value: text, error: '' })} numberOfLines={3} placeholderTextColor='rgba(255, 255, 255, 0.65)' 
