@@ -54,6 +54,7 @@ export default function ListsScreen({ navigation, route }) {
     const [selectedLanguage, setSelectedLanguage] = useState();
     const [modalRVisible, setModalRVisible] = useState(false);
     const [trackadded, setTrackAdded] = useState(false);
+    const [listcreated, setlistCreated] = useState('');  
     const { id, nombre, imagen, artista, release_date, release_date_precision } = route.params;
 
     const spotify = Credentials();  
@@ -146,6 +147,33 @@ export default function ListsScreen({ navigation, route }) {
       setListContent((listContent) => listContent.concat(track))
       //console.log(listContent);
     }
+             let arrayconten = arrayContent
+         let idalb = '';
+         let url2 = Url + "/albumes";
+         axios.get(url2,
+             {
+                 headers: { 'Content-Type': 'application/json',
+                 'x-token' : token },
+                 withCredentials: true
+             }
+         ).then((res) => {
+          res.data.albumes.forEach( (element2, index2) => { 
+            console.log(track.track.item.id);
+            console.log(element2.id);
+              if(element2.id == track.track.item.id){
+                  idalb = element2.uid;
+              }
+            });
+            console.log(idalb);
+            arrayconten.forEach( (element, index) => { 
+              if(element == idalb){
+                arrayconten.splice(index,1);
+                console.log('llega y borra');
+              }
+             });
+         })
+        
+ 
     function deleteTrack(track){
       console.log(track);
       let index = 0;
@@ -160,6 +188,7 @@ export default function ListsScreen({ navigation, route }) {
       })
       setListContent(listContent.filter((_, i) => i !== index))
       console.log(listContent);
+      
       
     }
 
@@ -190,6 +219,7 @@ export default function ListsScreen({ navigation, route }) {
             }
         ).then((res) => {
           console.log(res.data);
+          setlistCreated(res.data.lista.uid)
           setModalRVisible(true);
         })
         .catch((error) => {
@@ -268,7 +298,7 @@ export default function ListsScreen({ navigation, route }) {
               fontSize: 17
               }
             ]}>Review added succesfully!</Text>
-            <Text style={styles.link}>Go to your list page!</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('DetailListScreen', {id: listcreated})}><Text style={styles.link}>Go to your list page!</Text></TouchableOpacity>
             <Button mode="contained" style={styles.buttonTrack} onPress={() => navigation.navigate('Dashboard')}>OK</Button>
             </View>
           </View>

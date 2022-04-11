@@ -49,7 +49,7 @@ export default function ListsScreen({ navigation }) {
 
     React.useEffect(() => {
         let arrayalb = [];
-        let arraypicks = ['624e19bbe7e89afefd9ac6ab','625197b5259b95f536005633','62519c9761bab283a270320a'];
+        let arraypicks = ['625367b6a7c75d22b8bd905a','62536a92a7c75d22b8bd96b2','62536b7ea7c75d22b8bd9a50','62536df3a7c75d22b8bda2ae'];
         arraypicks.forEach( (element) => {
         let url = Url + "/listal?id=" + element;
         axios.get(url,

@@ -52,10 +52,12 @@ export default function AlbumScreen({ navigation, route }) {
   const [token, setToken] = useState(''); 
   const [usutoken, setusuToken] = useState('');   
   const [list, setList] = useState(''); 
-  const [listofalb, setListofalb] = useState(''); 
+  const [listofalb, setListofalb] = useState('');
+  const [fecha, setFecha] = useState('');   
   const [liked, setLiked] = useState('');   
   const [UID, setUsuUID] = useState('');  
   const [modalDVisible, setModalDVisible] = useState(false);
+  const [modalCVisible, setModalCVisible] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const { id } = route.params;
@@ -64,8 +66,13 @@ export default function AlbumScreen({ navigation, route }) {
   const [selectedSort, setSelectedSort] = useState();
   const [comment, setComment] = useState({ value: '', error: '' })
   const [inter, setInter] = useState('');
+  const [listTitle, setlistTitle] = useState({ value: '', error: '' })
+  const [listDesc, setlistDesc] = useState({ value: '', error: '' })
+  const [search, setSearch] = useState({ value: '', error: '' })
+  const [searchResults, setSearchResults] = useState([])
+  const [listContent, setListContent] = useState([])
+  const [arrayContent, setArrayContent] = useState([])
 
-    
   const spotify = Credentials();  
   //insfav();
       
@@ -115,6 +122,8 @@ export default function AlbumScreen({ navigation, route }) {
           ).then((res) => {
             console.log(res.data);
             setInter(moment.utc(res.data.listas.fecha).local().startOf('seconds').fromNow());
+            setlistTitle({ value: res.data.listas.titulo, error: '' });
+            setlistDesc({ value: res.data.listas.descripcion, error: '' });
             res.data.listas.comentarios.forEach( (element) => {
                 let url = Url + "/comentarios/?id=" + element._id;
                   axios.get(url,
@@ -131,6 +140,9 @@ export default function AlbumScreen({ navigation, route }) {
                   });
             setList(res.data.listas)
             setListofalb(res.data.listas.array)
+            res.data.listas.array.forEach( (element2) => {
+            setArrayContent((arrayContent) => arrayContent.concat(element2._id))
+            });
             res.data.listas.likes.forEach( (element2) => {
               if(element2 == ret.uid){
                   setLiked(true);
@@ -156,6 +168,7 @@ export default function AlbumScreen({ navigation, route }) {
           ).then((res) => {
             console.log(res.data);
             setInter(moment.utc(res.data.listas.fecha).local().startOf('seconds').fromNow());
+            console.log('ey load');
             res.data.listas.comentarios.forEach( (element) => {
                 let url = Url + "/comentarios/?id=" + element._id;
                   axios.get(url,
@@ -189,6 +202,47 @@ export default function AlbumScreen({ navigation, route }) {
        
      }, [load]); 
 
+      React.useEffect(() => {
+        if(!search) return setSearchResults([])
+        let cancel = false;
+        const getData = async () =>{
+            await axios('https://accounts.spotify.com/api/token', {
+              headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic ' + btoa(spotify.ClientId + ':' + spotify.ClientSecret)      
+              },
+              data: 'grant_type=client_credentials',
+              method: 'POST'
+            })
+            .then(tokenResponse => {  
+              setToken(tokenResponse.data.access_token);
+              spotifyApi.setAccessToken(tokenResponse.data.access_token); 
+              let url = 'https://api.spotify.com/v1/search?q='+ search.value +'&type=track';
+              axios(url, {
+                    method: 'GET',
+                    headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
+                  })
+                  .then (albumResponse => { 
+                      if (cancel) return       
+                  setSearchResults(albumResponse.data.tracks.items.map(track => {
+                    let fechasplit = track.album.release_date;
+                    return{
+                        artista: track.album.artists[0].name,
+                        nombre: track.album.name,
+                        id: track.album.id,
+                        imagen: track.album.images[0].url ,
+                        release_date: fechasplit,
+                        release_date_precision: track.album.release_date_precision,
+                    }
+                    
+                    }))
+                  });
+            });}
+        getData();
+
+        return () => cancel = true;
+     }, [search]); 
+    
      function addLike(){
       let url = Url + "/listal/" + id;
       let like = list.likes;
@@ -286,9 +340,7 @@ export default function AlbumScreen({ navigation, route }) {
           })
           .catch((error) => {
             console.error(error)
-          });
-          
-       
+          });     
 
     }, [selectedSort]); 
 
@@ -303,13 +355,63 @@ export default function AlbumScreen({ navigation, route }) {
         ).then((res) => {
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Lists' }],
+            routes: [{ name: 'Dashboard' }],
           });
 
         })
         .catch((error) => {
           console.error(error)
         });
+    }
+
+    function removeComment(idcom){
+      if(UID){
+        let arraycom = [];
+        let url = Url + "/listal/" + id;
+        let coms = list.comentarios;
+        coms.forEach( (element, index) => { //lo borramos del usuario
+          if(element._id == idcom){
+            coms.splice(index,1);
+            //console.log('deleted');
+          }
+        });
+        const lista = {
+          titulo: list.titulo,
+          array: list.array,
+          comentarios: coms,
+          usuario: list.usuario,
+          public: list.public,
+          descripcion: list.descripcion,
+          fecha: list.fecha,
+          likes : list.likes
+        }
+        axios.put(url,
+        lista,
+        {
+            headers: { 'Content-Type': 'application/json',
+            'x-token' : token },
+            withCredentials: true
+        }
+        ).then((res3) => { 
+          let url2 = Url + "/comentarios/" + idcom;
+          axios.delete(url2,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : token },
+                  withCredentials: true
+              }
+          ).then((res4) => {
+            console.log('borrado');
+          });
+          setArraycoms([])
+          setLoad(!load);
+          showMessage({
+            message: "Comment deleted!",
+            type: "default",
+            icon: "success"
+          });
+        });
+        }
     }
 
     function addComment(){
@@ -370,7 +472,7 @@ export default function AlbumScreen({ navigation, route }) {
                           icon: "success"
                         });
                         setList(lista1);
-                        //setLoad(!load);
+                        setLoad(!load);
                         //setArraycoms(array);
                       });
   
@@ -386,12 +488,226 @@ export default function AlbumScreen({ navigation, route }) {
           }
           }
       }
+      const onListPressed = () => {
+
+        try {
+          let titleform = listTitle.value;
+          let textform = listDesc.value;
+          const data = {
+            titulo : titleform,
+            descripcion : textform,
+            fecha : list.fecha,
+            usuario : list.usuario,
+            likes: list.likes,
+            public: list.public,
+            comentarios: list.comentarios,
+            array: arrayContent
+           }
+          let url = Url + "/listal/" + id;
+          axios.put(url,
+              data,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : token },
+                  withCredentials: true
+              }
+          ).then((res) => {
+            setModalCVisible(false);
+            setList(data);
+            setListContent([]);
+            setArrayContent([]);
+            setLoad(!load);
+            showMessage({
+              message: "List edited succesfully!",
+              type: "success",
+              icon: "success"
+            });
+            
+          })
+          .catch((error) => {
+            console.error(error)
+          });
+          
+      } catch (err) {
+          console.log(err);
+        }
+        
+      }
+
+      function addToList(track){
+        //console.log(track);
+        setSearch({ value: '', error: '' }); 
+        /*const data = {
+          titulo : titleform,
+          descripcion : textform,
+          usuario : UID,
+          array: listContent,
+          public: !toggleCheckBox
+        }*/
+        let url = Url + "/albumes";
+        console.log(track.item.release_date_precision);
+        if(track.item.release_date_precision!='year'){
+          let split = track.item.release_date.split('-');
+          track.item.release_date = split[0];
+        }    
+        axios.post(url,
+            track.item,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : usutoken },
+                withCredentials: true
+            }
+        ).then((res) => {
+          setArrayContent((arrayContent) => arrayContent.concat(res.data.album.uid))
+          console.log(arrayContent);
+        })
+        .catch((error) => {
+          console.error(error)
+        });
+        setListContent((listContent) => listContent.concat(track))
+        //console.log(listContent);
+      }
+      function deleteTrackB(track){
+
+        let index = 0;
+        let encontrado = false;
+        listofalb.map(track2 => {
+          if(track2.nombre != track.track.nombre && encontrado == false){
+            index++;
+          }
+          else{
+            encontrado = true;
+          }
+        })
+        setListofalb(listofalb.filter((_, i) => i !== index))
+        setArrayContent(arrayContent.filter((_, i) => i !== index))
+        //slice del array content
+        console.log('hola');
+        let arrayconten = arrayContent
+        let idalb = '';
+         let url2 = Url + "/albumes?pag=0";
+         axios.get(url2,
+             {
+                 headers: { 'Content-Type': 'application/json',
+                 'x-token' : token },
+                 withCredentials: true
+             }
+         ).then((res) => {
+          res.data.albumes.forEach( (element2, index2) => { 
+              if(element2.id == track.id){
+                  idalb = element2.uid;
+              }
+            });
+            arrayconten.forEach( (element, index) => { 
+              if(element == idalb){
+                arrayconten.splice(index,1);
+                console.log('llega y borra');
+              }
+             });
+             const data = {
+              titulo : list.titulo,
+              descripcion : list.descripcion,
+              fecha : list.fecha,
+              usuario : list.usuario,
+              likes: list.likes,
+              public: list.public,
+              comentarios: list.comentarios,
+              array: arrayconten
+             }
+            let url = Url + "/listal/" + id;
+            axios.put(url,
+                data,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : token },
+                    withCredentials: true
+                }
+            ).then((res) => {
+              setList(data);
+              console.log(arrayContent);
+            })
+         })
+        
+
+        //console.log(listofalb);
+      }
+
+      function deleteTrack(track){
+        let index = 0;
+        let encontrado = false;
+        listContent.map(track2 => {
+          if(track2.item.nombre != track.track.item.nombre && encontrado == false){
+            index++;
+          }
+          else{
+            encontrado = true;
+          }
+        })
+        setListContent(listContent.filter((_, i) => i !== index))
+        setArrayContent(arrayContent.filter((_, i) => i !== index))
+
+         //slice del array content
+         let arrayconten = arrayContent
+         let idalb = '';
+         let url2 = Url + "/albumes?pag=0";
+         axios.get(url2,
+             {
+                 headers: { 'Content-Type': 'application/json',
+                 'x-token' : token },
+                 withCredentials: true
+             }
+         ).then((res) => {
+          res.data.albumes.forEach( (element2, index2) => { 
+              if(element2.id == track.track.item.id){
+                  idalb = element2.uid;
+              }
+            });
+            console.log(idalb);
+            console.log(arrayconten);
+            arrayconten.forEach( (element, index) => { 
+              if(element == idalb){
+                arrayconten.splice(index,1);
+                console.log('llega y borra' + element);
+              }
+             });
+            console.log(arrayconten);
+
+             const data = {
+              titulo : list.titulo,
+              descripcion : list.descripcion,
+              fecha : list.fecha,
+              usuario : list.usuario,
+              likes: list.likes,
+              public: list.public,
+              comentarios: list.comentarios,
+              array: arrayconten
+             }
+            let url = Url + "/listal/" + id;
+            axios.put(url,
+                data,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : token },
+                    withCredentials: true
+                }
+            ).then((res) => {
+              setList(data);
+            })
+         })
+        
+        
+
+      }
+
     function closeModalD(){
         setModalDVisible(false);
     }
     function clickDelete(){
         setModalDVisible(true);
     }
+    function clickDeleteEdit(){
+      setModalCVisible(true);
+  }
 
     if (!fontsLoaded) {
     return <AppLoading />
@@ -403,6 +719,155 @@ export default function AlbumScreen({ navigation, route }) {
 
   return (
       <View style={styles.Fondo}>
+        <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalCVisible}
+        onRequestClose={() => {
+          setModalCVisible(!modalCVisible);
+        }}
+      >
+        <View style={[styles.centeredView,modalBackgroundStyle]}>
+        <ScrollView>
+          <View style={styles.modalView}>
+            <View style={styles.reviewView}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              color: theme.colors.text,
+              fontSize: 15
+              }
+            ]}>Edit list...</Text>
+            <View style={styles.Info2}>
+            <Text style={styles.Infonamemodal}>{list.titulo}</Text>
+            {list.usuario ? <Text style={styles.Infoart}>by {list.usuario.username}</Text>:null } 
+            </View>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Title</Text>
+            <TextInputE value={listTitle.value}
+            onChangeText={(text) => setlistTitle({ value: text, error: '' })}></TextInputE>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Description</Text>
+            <TextInput multiline={true} style={styles.input}
+            numberOfLines={8} value={listDesc.value}
+            onChangeText={(text) => setlistDesc({ value: text, error: '' })}></TextInput>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18,
+              marginTop: 15
+              }
+            ]}>Albums</Text>
+            <View style={styles.searchDiv}> 
+            <Feather style={[
+              { 
+              marginBottom: 12,
+              marginRight: 5
+              }
+            ]} name="search" size={24} color="white" />
+            <TextInputE placeholder="Search by name" placeholderTextColor='rgba(255, 255, 255, 0.75)' 
+            onChangeText={(text) => setSearch({ value: text, error: '' })}></TextInputE>
+            </View>
+                        
+            {search.value != '' && <View style={styles.container2}>
+                  <View style={styles.subContainer}>
+                      {
+                          searchResults.length ?
+
+                              searchResults.slice(0, 4).map(item => {
+                                  return (
+                                      <TouchableOpacity style={styles.itemView} onPress={() => addToList({item})}>
+                                      <View style={styles.infoDiv}>
+                                          <Image source={{ uri: item.imagen }} style={styles.image2}  />
+                                          <View  style={styles.restitle2}>
+                                          <Text numberOfLines={1} style={styles.itemText}>{item.nombre}</Text>
+                                          <Text numberOfLines={1} style={styles.itemText2}>{item.artista}</Text>
+                                          </View>
+                                      </View>
+                                      </TouchableOpacity>
+
+                                  )
+                              })
+
+                              :
+                              <View
+                                  style={styles.noResultView}>
+                                  <Text style={styles.noResultText}>No search items matched</Text>
+                              </View>
+                      }
+
+                  </View>
+              </View>}
+               {listofalb ? <View>
+               {listofalb.map((track, i) => {
+                    return <View key={i} style={styles.resul}>
+                    <Image source={{ uri: track.imagen }} style={styles.image}  />
+                    <View style={styles.restitle}>
+                    <Text numberOfLines={1} style={[
+                    { fontFamily:'Raleway_700Bold',
+                    paddingVertical: 4,
+                    color: theme.colors.text,
+                    fontSize: 18
+                    }
+                    ]}>{track.nombre}</Text>
+                    <Text numberOfLines={1} style={[
+                    { fontFamily:'Raleway_400Regular',
+                    paddingVertical: 4,
+                    color: theme.colors.text,
+                    fontSize: 18
+                    }
+                    ]}>{track.artista}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => deleteTrackB({track})}><Entypo name="circle-with-cross" size={24} color="white" /></TouchableOpacity>
+                     </View>
+
+                })}
+                {listContent.map((track, i) => {
+                    return <View key={i} style={styles.resul}>
+                    <Image source={{ uri: track.item.imagen }} style={styles.image}  />
+                    <View style={styles.restitle}>
+                    <Text numberOfLines={1} style={[
+                    { fontFamily:'Raleway_700Bold',
+                    paddingVertical: 4,
+                    color: theme.colors.text,
+                    fontSize: 18
+                    }
+                    ]}>{track.item.nombre}</Text>
+                    <Text numberOfLines={1} style={[
+                    { fontFamily:'Raleway_400Regular',
+                    paddingVertical: 4,
+                    color: theme.colors.text,
+                    fontSize: 18
+                    }
+                    ]}>{track.item.artista}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => deleteTrack({track})}><Entypo name="circle-with-cross" size={24} color="white" /></TouchableOpacity>
+                     </View>
+
+                })}
+            </View>:null}
+            { list ? <Button
+              mode="contained"
+              onPress={onListPressed}
+              >
+                Save
+              </Button>:null}
+            </View>
+          </View>
+        
+          </ScrollView>
+        </View>
+      </Modal>
         <Modal
                 animationType="fade"
                 transparent={true}
@@ -491,7 +956,7 @@ export default function AlbumScreen({ navigation, route }) {
                 alignItems: 'center',
                 }
              ]}><Text style={styles.Infoname}>{list.titulo}</Text>
-                {list.usuario ? <View>{UID == list.usuario._id &&<TouchableOpacity style={[
+                {list.usuario ? <View>{UID == list.usuario._id &&<TouchableOpacity onPress={clickDeleteEdit} style={[
                 { marginTop: 10,
                   marginRight: 10
                 }
@@ -585,7 +1050,7 @@ export default function AlbumScreen({ navigation, route }) {
                         }
                     ]}>{item.texto}</Text></View><View style={styles.comments2}><View style={[
                         { paddingHorizontal: 15}
-                        ]}>{UID == item.creador._id &&<Entypo name="trash" size={24} color="white" />}
+                        ]}>{UID == item.creador._id &&<TouchableOpacity onPress={removeComment.bind(this, item.uid)}><Entypo name="trash" size={24} color="white" /></TouchableOpacity>}
                         </View><Feather name="flag" size={24} color="white" /></View></View>
                 )}
                 numColumns={1}
@@ -622,6 +1087,47 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontFamily:'Raleway_400Regular'
   },
+  itemView: {
+    // marginHorizontal: '10%',
+    backgroundColor: 'white',
+    height: 60,
+    width: '95%',
+    marginBottom: 10,
+    justifyContent: 'center',
+    borderRadius: 4, 
+  },
+  restitle2:{
+    paddingHorizontal: 10,
+    width: 240
+  },
+  infoDiv:{
+    flexDirection: 'row'
+  },
+  image2: {
+    width: 40,
+    height: 40,
+    marginLeft: 5,
+    alignItems:'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 5
+  },
+  resul:{
+    flexDirection: 'row',
+    paddingVertical: 1,
+    paddingHorizontal: 1,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 10,
+    marginHorizontal: 5,
+    marginVertical: 3,
+    backgroundColor: 'rgba(152, 152, 152, 0.45)'
+  },
+  searchDiv:{
+    flexDirection:'row',
+    alignItems: 'center',
+    width: '90%'
+  },  
   centeredView:{
     height: '100%'
   },
@@ -666,9 +1172,9 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   image: {
-    width: 140,
-    height: 140,
-    marginTop: 25,
+    width: 60,
+    height: 60,
+    marginTop: 3,
     marginBottom: 1,
     marginLeft: 0,
     alignItems:'center',
@@ -717,12 +1223,25 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontFamily: 'Raleway_400Regular',
   },
+  Info2:{
+    alignItems: 'center',
+    width:'95%',
+    paddingVertical: 10
+  },
   Infoname:{
     fontSize: 22,
     marginTop: 6,
     width: '100%',
     color: theme.colors.text,
     fontFamily: 'Raleway_700Bold',
+  },
+  Infonamemodal:{
+    fontSize: 22,
+    marginTop: 6,
+    width: '100%',
+    color: theme.colors.text,
+    fontFamily: 'Raleway_700Bold',
+    textAlign: 'center'
   },
   RateDiv:{
     borderWidth: 2,
@@ -753,8 +1272,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Raleway_400Regular',
     fontSize: 21,
     color: theme.colors.text
-  }
-  ,
+  },
+  restitle:{
+    paddingHorizontal: 10,
+    width: 187
+  },
+    restitle2:{
+      paddingHorizontal: 10,
+      width: 240
+    },
   comments2: {
     flexDirection: 'row'
   },
@@ -789,7 +1315,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 4,
     color: theme.colors.text,
-    fontFamily:'Raleway_400Regular' 
+    fontFamily: 'Raleway_400Regular_Italic',
   },
   like: {
     color: theme.colors.text,
@@ -818,5 +1344,55 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginVertical: 3,
         justifyContent: 'space-between'
-      }
+      },
+      input: {
+        backgroundColor: 'rgba(248, 34, 34, 0.25)',
+        color: theme.colors.text,
+        fontSize: 15,
+        borderWidth: 1,
+        borderColor: 'rgba(217, 15, 200, 0.55)',
+        borderRadius: 10,
+        padding: 0,
+        marginTop: 6,
+      },
+      container:{
+        width: '100%',
+        height: '100%',
+        paddingHorizontal: 20,
+      },
+      container2: { 
+      marginTop: -18,
+      marginLeft: 15
+      },
+      subContainer: {
+        backgroundColor: '#672f78',
+        paddingTop: 10,
+        marginHorizontal: 20,
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignContent: 'center'
+    },
+    itemText: {
+      color: 'black',
+      paddingHorizontal: 10,
+      fontFamily:'Raleway_700Bold',
+    },
+    itemText2: {
+      color: 'black',
+      paddingHorizontal: 10,
+      fontFamily:'Raleway_400Regular',
+    },
+    noResultView: {
+        alignSelf: 'center',
+        // margin: 20,
+        height: 100,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignContent: 'center',
+    },
+      
 })

@@ -44,6 +44,7 @@ import {
     Raleway_300Light_Italic,
     Raleway_400Regular_Italic,
   } from '@expo-google-fonts/raleway';
+import reviews from '../../Backend/models/reviews';
 
 export default function ReviewScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = React.useState(true);
@@ -254,6 +255,56 @@ export default function ReviewScreen({ navigation, route }) {
        
      }, [load]); 
 
+      function removeComment(idcom){
+        if(UID){
+          let arraycom = [];
+          let url = Url + "/reviews/" + id;
+          let coms = review.comentarios;
+          coms.forEach( (element, index) => { //lo borramos del usuario
+            console.log(element.uid);
+            if(element.uid == idcom){
+              coms.splice(index,1);
+              //console.log('deleted');
+            }
+          });
+          const reviews = {
+            titulo : review.titulo,
+            texto : review.texto,
+            fecha : review.fecha,
+            usuario : review.usuario,
+            album: review.album,
+            artista: review.artista,
+            comentarios: coms,
+            likes : review.likes
+           }
+          axios.put(url,
+          reviews,
+          {
+              headers: { 'Content-Type': 'application/json',
+              'x-token' : token },
+              withCredentials: true
+          }
+          ).then((res3) => { 
+            let url2 = Url + "/comentarios/" + idcom;
+            axios.delete(url2,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : token },
+                    withCredentials: true
+                }
+            ).then((res4) => {
+              console.log('borrado');
+            });
+            setLoad(!load);
+            showMessage({
+              message: "Comment deleted!",
+              type: "default",
+              icon: "success"
+            });
+          });
+          }
+      }
+
      function addLike(){
       let url3 = Url + "/reviews/" + id;
       let like = review.likes;
@@ -439,7 +490,7 @@ export default function ReviewScreen({ navigation, route }) {
             }
            ]}>{item.texto}</Text></View><View style={styles.comments2}><View style={[
             { paddingHorizontal: 15}
-             ]}>{UID == item.creador._id &&<Entypo name="trash" size={24} color="white" />}
+             ]}>{UID == item.creador._id &&<TouchableOpacity onPress={removeComment.bind(this, item._id)}><Entypo name="trash" size={24} color="white" /></TouchableOpacity>}
              </View><Feather name="flag" size={24} color="white" /></View></View>
        ))     
        return r;
@@ -539,7 +590,7 @@ export default function ReviewScreen({ navigation, route }) {
               fontSize: 18
               }
             ]}>Title</Text>
-            <TextInputE value={reviewTitle.value}
+            <TextInputE value={reviewTitle.value} 
             onChangeText={(text) => setreviewTitle({ value: text, error: '' })}></TextInputE>
             <Text style={[
               { fontFamily:'Raleway_400Regular',
@@ -548,7 +599,7 @@ export default function ReviewScreen({ navigation, route }) {
               fontSize: 18
               }
             ]}>Review</Text>
-            <TextInput multiline={true} 
+            <TextInput multiline={true}
             numberOfLines={8} value={reviewText.value}
             onChangeText={(text) => setreviewText({ value: text, error: '' })}></TextInput>
             { review ? <Button

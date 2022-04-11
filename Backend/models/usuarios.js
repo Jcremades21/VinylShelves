@@ -35,7 +35,48 @@ const UsuarioSchema = Schema({
         type: String,
         required: true,
         default: 'USUARIO'
-    }
+    },
+    reviews: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
+    ratings: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Rating'
+    }],
+    favs: [{
+        type: String
+    }],
+    bio: {
+        type: String
+    },
+    list_liked: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Listal'
+    }],
+    user_lists: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Listal'
+    }],
+    notis: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Notificacion'
+    }],
+    notis_act:{
+        type: Boolean,
+        default: true
+    },
+    seguidos: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Usuario'
+    }],
+    seguidores: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Usuario'
+    }],
+    
+
+
 }, { collection: 'usuarios' });
 
 UsuarioSchema.method('toJSON', function() {

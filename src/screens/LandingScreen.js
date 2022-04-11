@@ -218,7 +218,7 @@ export default function Landing({ navigation }) {
         <Text style={styles.Divtext}>Popular albums</Text>
       </LinearGradient>
       <View>
-      <CustomSlider navigation={navigation} data={pops} />
+      { pops ? <CustomSlider navigation={navigation} data={pops} />:null}
       </View>
       <View>
       </View>

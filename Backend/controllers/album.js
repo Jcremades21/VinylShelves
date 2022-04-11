@@ -10,6 +10,7 @@ const obtenerAlbumes = async(req, res) => {
     const desde = Number(req.query.desde) || 0;
     const registropp = Number(process.env.DOCSPERPAGE);
     const texto = req.query.texto;
+    const pag = req.query.pag;
     let textoBusqueda = '';
     if (texto) {
         textoBusqueda = new RegExp(texto, 'i');
@@ -36,15 +37,31 @@ const obtenerAlbumes = async(req, res) => {
         // Si no ha llegado ID, hacemos el get / paginado
         else {
             if (texto) {
+                if(pag){
                 [albumes, total] = await Promise.all([
-                    Album.find({ $or: [{ nombre: textoBusqueda }, { artista: textoBusqueda }] }).skip(desde).limit(registropp),
+                    Album.find({ $or: [{ nombre: textoBusqueda }, { artista: textoBusqueda }] }).skip(desde),
                     Album.countDocuments({ $or: [{ nombre: textoBusqueda}, { artista: textoBusqueda }] })
                 ]);
+                }
+                else{
+                [albumes, total] = await Promise.all([
+                        Album.find({ $or: [{ nombre: textoBusqueda }, { artista: textoBusqueda }] }).skip(desde).limit(registropp),
+                        Album.countDocuments({ $or: [{ nombre: textoBusqueda}, { artista: textoBusqueda }] })
+                ]);
+                }
             } else {
+                if(pag){
+                [albumes, total] = await Promise.all([
+                    Album.find({}).skip(desde),
+                    Album.countDocuments()
+                ]);
+                }
+                else{
                 [albumes, total] = await Promise.all([
                     Album.find({}).skip(desde).limit(registropp),
                     Album.countDocuments()
-                ]);
+                ]); 
+                }
             }
 
         }
