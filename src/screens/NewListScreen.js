@@ -113,6 +113,7 @@ export default function ListsScreen({ navigation, route }) {
         }
         });
     }, []); 
+    
     function addToList(track){
       //console.log(track);
       setSearch({ value: '', error: '' }); 

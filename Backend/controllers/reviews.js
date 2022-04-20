@@ -11,14 +11,21 @@ const obtenerReviews = async(req, res) => {
     const registropp = Number(process.env.DOCSPERPAGE);
     const texto = req.query.texto;
     const album = req.query.album;
+    const artista = req.query.artist;
+    const pag = req.query.pag;
     let textoBusqueda = '';
     let albumBusqueda = '';
+    let artistBusqueda = '';
     if (texto) {
         textoBusqueda = new RegExp(texto, 'i');
         // console.log('texto', texto, ' textoBusqueda', textoBusqueda);
     }
     if (album) {
         albumBusqueda = new RegExp(album, 'i');
+        // console.log('texto', texto, ' textoBusqueda', textoBusqueda);
+    }
+    if (artista) {
+        artistBusqueda = new RegExp(artista, 'i');
         // console.log('texto', texto, ' textoBusqueda', textoBusqueda);
     }
     // Obtenemos el ID de usuario por si quiere buscar solo un usuario
@@ -32,33 +39,42 @@ const obtenerReviews = async(req, res) => {
         let reviews, total;
         // Si ha llegado ID, hacemos el get /id
         if (id) {
-
+            if (!validator.isMongoId(id)) {
+                return res.json({
+                    ok: false,
+                    msg: 'El id de la review debe ser válido'
+                });
+            }
             [reviews, total] = await Promise.all([
                 Review.findById(id).populate('album', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
                 Review.countDocuments()
             ]);
 
         }
-        // Si no ha llegado ID, hacemos el get / paginado
-        else {
-            if (texto) {
+         else {
+    
+            let query = new Object();
+    
+            if (texto) query.titulo = textoBusqueda;
+    
+            if (album) query.album = albumBusqueda;;
+    
+            if (artista) query.artista = artistBusqueda;
+        
+            console.log(query);
+    
+            if (pag == 0) {
                 [reviews, total] = await Promise.all([
-                    Review.find({ $or: [{ titulo: textoBusqueda }, { texto: textoBusqueda }] }).skip(desde).limit(registropp).populate('album', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
-                    Review.countDocuments({ $or: [{ titulo: textoBusqueda}, { texto: textoBusqueda }] })
-                ]);
-            } 
-            if (album) {
-                [reviews, total] = await Promise.all([
-                    Review.find({ $or: [{ album: albumBusqueda }] }).skip(desde).limit(registropp).populate('album', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
-                    Review.countDocuments({ $or: [{ album: albumBusqueda}] })
+                    Review.find({ $or: [query] }).skip(desde).populate('comentarios', '-__v').populate('usuario', '-__v').populate('likes', '-__v'),
+                    Review.countDocuments({ $or: [query] })
                 ]);
             } else {
                 [reviews, total] = await Promise.all([
-                    Review.find({}).skip(desde).limit(registropp).populate('album', '-__v').populate('usuario', '-__v').populate('comentarios', '-__v'),
-                    Review.countDocuments()
+                    Review.find({ $or: [query] }).skip(desde).limit(registropp).populate('comentarios', '-__v').populate('usuario', '-__v').populate('likes', '-__v'),
+                    Review.countDocuments({ $or: [query] })
                 ]);
             }
-
+    
         }
 
         res.json({

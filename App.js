@@ -25,6 +25,8 @@ import ReviewScreen from './src/screens/ReviewScreen';
 import NewListScreen from './src/screens/NewListScreen';
 import DetailListScreen from './src/screens/DetailListScreen'; 
 import AddtolistScreen from './src/screens/AddtolistScreen'; 
+import ArtistScreen from './src/screens/ArtistScreen';
+import FilterScreen from './src/screens/FilterScreen';
 
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator();
@@ -93,8 +95,7 @@ function LandingTabs() {
   );
 }
 
-function HomeTabs() {
-  return (
+const HomeTabs = () => (
     <Tab.Navigator
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
@@ -139,7 +140,7 @@ function HomeTabs() {
 
           <Tab.Screen name={dashboardName} component={Dashboard}  />
           <Tab.Screen name={ListsName} component={ListsScreen} />
-          <Tab.Screen name={searchName} component={SearchScreen} />
+          <Tab.Screen name={searchName} component={SearchScreen}/>
           <Tab.Screen name={ProfileName} component={ProfileScreen}
           //options={{
             // hide the bottom tab bar on Contact Screen
@@ -148,8 +149,7 @@ function HomeTabs() {
           />
 
       </Tab.Navigator>
-  );
-}
+)
 
 export default function App() {
   const [isLoading, setIsLoading] = React.useState(true);
@@ -184,6 +184,9 @@ export default function App() {
           <Stack.Screen name="NewListScreen" component={NewListScreen} />
           <Stack.Screen name="DetailListScreen" component={DetailListScreen} />
           <Stack.Screen name="AddtolistScreen" component={AddtolistScreen} />
+          <Stack.Screen name="ArtistScreen" component={ArtistScreen} />
+          <Stack.Screen name="SearchScreen" component={SearchScreen} />
+          <Stack.Screen name="FilterScreen" component={FilterScreen} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}

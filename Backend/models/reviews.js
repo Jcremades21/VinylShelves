@@ -22,6 +22,9 @@ const ReviewSchema = Schema({
     album: {
         type: String
     },
+    albumimg: {
+        type: String
+    },
     usuario: {
         type: Schema.Types.ObjectId,
         ref: 'Usuario'

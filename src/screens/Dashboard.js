@@ -27,7 +27,7 @@ import {
   Raleway_400Regular_Italic,
 } from '@expo-google-fonts/raleway';
 
-export default function Dashboard({ navigation }) {
+export default function Dashboard({ route, navigation }) {
   const [ourfavs, setOurFavs] = useState([]); 
   const [reviews, setReviews] = useState([]);   
   const [usuemail, setUsuemail] = useState('');

@@ -166,6 +166,9 @@ export default function ListsScreen({ navigation }) {
             >      
                {usutoken ? <Text style={styles.Divtext}>New from friends</Text>:<Text style={styles.Divtext}>All time favourites</Text>}
             </LinearGradient> 
+            <View>
+            { populars && usutoken ? <CustomSlider3 navigation={navigation} data={newest} />:<CustomSlider3 navigation={navigation} data={populars}/> }
+            </View>
         </ScrollView>
         </View>
     );

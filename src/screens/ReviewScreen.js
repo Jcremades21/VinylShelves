@@ -67,8 +67,7 @@ export default function ReviewScreen({ navigation, route }) {
   const [review , setReview] = useState([]);
   const [arraycoms , setArraycoms] = useState([]);
   const { id } = route.params;
-
-    
+      
   const spotify = Credentials();  
   //insfav();
       
@@ -664,6 +663,7 @@ export default function ReviewScreen({ navigation, route }) {
       <ScrollView>
       <View style={styles.encabezado}>
       <BackButton goBack={navigation.goBack} />
+      
       {review.usuario && inter ? <><PageHeader
           >{review.usuario.username}'s review </PageHeader><View style={[
             { paddingHorizontal: 10 }
@@ -673,7 +673,7 @@ export default function ReviewScreen({ navigation, route }) {
       <View style={styles.TopBanner}>
       <View style={styles.Info}>
       <TouchableOpacity onPress={() => navigation.navigate('AlbumScreen', {id: album.id})}><Text style={styles.Infoname}>{album.name}</Text></TouchableOpacity>
-      {album ? <Text style={styles.Infoart}>{album.artists[0].name}</Text>:null } 
+      {album ? <TouchableOpacity onPress={() => navigation.navigate('ArtistScreen', {id: album.artists[0].id})}><Text style={styles.Infoartista}>{album.artists[0].name}</Text></TouchableOpacity>:null } 
       <Text style={styles.Infoart}>{fecha}</Text>
       <Paragraph style={styles.Infoval}>
       <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text><Text style={styles.Infoval}>3/5</Text>
@@ -768,6 +768,12 @@ const styles = StyleSheet.create({
     buttonTrack:{
       backgroundColor: '#636363',
       width: 115
+    },
+    Infoartista: {
+      fontSize: 16,
+      marginTop: 4,
+      color: theme.colors.secondary,
+      fontFamily:'Raleway_700Bold',
     },
     Info2:{
       alignItems: 'center',

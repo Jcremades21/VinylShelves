@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
-import { Alert, TouchableOpacity, StyleSheet, View, Modal, MsgBox, Text, SafeAreaView, ScrollView, Image } from 'react-native'
+import { Alert, FlatList, TouchableOpacity, StyleSheet, View, Modal, MsgBox, Text, SafeAreaView, ScrollView, Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
 import { Credentials } from '../helpers/credentials';
 import Background from '../components/Background'
@@ -9,6 +9,7 @@ import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
 import CustomSlider from '../components/Carrousel'
 import CustomSlider2 from '../components/CarrouselReviews'
+import CustomSlider4 from '../components/CarrousselArtist';
 import Button from '../components/Button'
 import storage from '.'
 import { theme } from '../core/theme'
@@ -42,17 +43,17 @@ import {
     Raleway_400Regular_Italic,
   } from '@expo-google-fonts/raleway';
 
-export default function AlbumScreen({ navigation, route }) {
+export default function ArtistScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [load, setLoad] = React.useState(false);
   const [token, setToken] = useState(''); 
   const [usutoken, setusuToken] = useState('');   
-  const [album, setAlbum] = useState('');  
+  const [artist, setArtist] = useState('');  
   const [UID, setUsuUID] = useState('');  
   const [news, setNews] = useState([]);
   const [reviewspop, setReviewspop] = useState([]);
-  const [fecha, setFecha] = useState('');  
-  const [audioTracks, setAudioTracks] = useState([]);
+  const [albums, setAlbums] = useState([]);
+  const [related, setRelated] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalRVisible, setModalRVisible] = useState(false);
   const [sound, setSound] = React.useState();
@@ -61,8 +62,7 @@ export default function AlbumScreen({ navigation, route }) {
   const [reviewText, setreviewText] = useState({ value: '', error: '' })
   const [success, setSuccess] = useState(false);
   const [errMsg, setErrMsg] = useState('');
-  const { id, back } = route.params;
-
+  const { id, refresh } = route.params;
     
   const spotify = Credentials();  
   //insfav();
@@ -76,6 +76,7 @@ export default function AlbumScreen({ navigation, route }) {
   let [fontsLoaded] = useFonts({
     Raleway_400Regular,
     Raleway_700Bold,
+    Raleway_400Regular_Italic
     });
 
   var spotifyApi = new SpotifyWebApi({
@@ -83,42 +84,7 @@ export default function AlbumScreen({ navigation, route }) {
         clientSecret: '508413bf4ea24a26ad44b70d831ae2bc'
       });
 
-    async function playSound(item) {
-      let url = '';
-        for (var i = 0; i < audioTracks.length; i++) {
-          if(item == audioTracks[i].name){
-            url = audioTracks[i].preview_url;
-          }
-        }
-        console.log('Loading Sound');
-        console.log('url: ' + url);
-        setAudioStatus(!audioStatus)
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: url },
-          { shouldPlay: true }     
-       );
-        setSound(sound);
-        if (audioStatus) {
-        console.log('Playing Sound');
-        await sound.playAsync(); 
-        }
-
-        else{
-          await sound.stopAsync()
-          await sound.unloadAsync()
-        }
-      
-      }
     
-      React.useEffect(() => {
-        return sound
-          ? () => {
-              console.log('Unloading Sound');
-              sound.unloadAsync(); }
-          : undefined;
-      }, [sound]);
-
-
     React.useEffect(() => {
       const getData = async () =>{
       await axios('https://accounts.spotify.com/api/token', {
@@ -132,24 +98,45 @@ export default function AlbumScreen({ navigation, route }) {
       .then(tokenResponse => {  
         setToken(tokenResponse.data.access_token);
         spotifyApi.setAccessToken(tokenResponse.data.access_token);   
-        axios('https://api.spotify.com/v1/albums/' + id, {
+        axios('https://api.spotify.com/v1/artists/' + id, {
           method: 'GET',
           headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
         })
         .then (albumResponse => {        
-         console.log(albumResponse.data.tracks.items[0].preview_url);
-         setAlbum(albumResponse.data);
-         setAudioTracks(albumResponse.data.tracks.items);
-         if(albumResponse.data.release_date_precision!='year'){
-           let split = albumResponse.data.release_date.split('-');
-           setFecha(split[0]);
-         }
+         //console.log(albumResponse.data);
+         setArtist(albumResponse.data);
+            axios('https://api.spotify.com/v1/artists/' + id + '/albums?include_groups=album', {
+            method: 'GET',
+            headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
+            })
+            .then (albumResponse => {        
+            //console.log(albumResponse.data.items);
+            let arrayitems = [];
+            albumResponse.data.items.map(item => {
+                let esta = false;
+                arrayitems.map(item2 => {
+                    if(item.name == item2.name){
+                        esta = true;
+                    }
+                });
+                if(esta==false){
+                    arrayitems.push(item);     
+                }
+            });
+            setAlbums(arrayitems);
+            });
+            axios('https://api.spotify.com/v1/artists/' + id + '/related-artists', {
+            method: 'GET',
+            headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
+            })
+            .then (albumResponse2 => {        
+            setRelated(albumResponse2.data.artists);
+            });
          });
 
       });}
       getData();
-      setLoad(!load)
-    }, [spotify.ClientId, spotify.ClientSecret, id]); 
+    }, [spotify.ClientId, spotify.ClientSecret, refresh]); 
 
     function clickTracklist(){
       setModalVisible(true);
@@ -157,20 +144,7 @@ export default function AlbumScreen({ navigation, route }) {
     function clickReview(){
       setModalRVisible(true);
     }
-    function renderTracks() {
-      if(audioTracks){
-      return album.tracks.items.map((item, i) => (
-        <View key={i} style={styles.trackDiv}><Text style={[
-          { fontFamily:'Raleway_400Regular',
-           paddingVertical: 4,
-           marginLeft: 11,
-           color: theme.colors.text,
-           fontSize: 17,
-           maxWidth: 240
-          }
-         ]}>{item.track_number}. {item.name}</Text>{item.preview_url ?<TouchableOpacity onPress={() => playSound(item.name)} style={styles.iconPlay}>{audioStatus?<AntDesign name="playcircleo" size={24} color="white" />:<AntDesign name="playcircleo" size={24} color="white" />}</TouchableOpacity>:null  }</View>
-     )) 
-    }}
+    
     React.useEffect(() => {
 
         storage
@@ -203,10 +177,11 @@ export default function AlbumScreen({ navigation, route }) {
         });
        
      }, []); 
+
      React.useEffect(() => {
       let array = [];
-      let url = Url + "/reviews/?album=" + id;
-      console.log("EYYYYYYYYYYYYYYY" + url);
+      let url = Url + "/reviews/?artist=" + id;
+      console.log(url);
       axios.get(url,
           {
               headers: { 'Content-Type': 'application/json',
@@ -220,7 +195,6 @@ export default function AlbumScreen({ navigation, route }) {
         spotifyApi.getAlbum(element.album).then(
           function(albumResponse) {
               const data = {
-                id: element.uid,
                 albumimg: albumResponse.body.images[0].url,
                 albumname: albumResponse.body.name,
                 albumartist: albumResponse.body.artists[0].name,
@@ -244,53 +218,9 @@ export default function AlbumScreen({ navigation, route }) {
         console.error(error)
       });
       setReviewspop(array); 
-    }, []); 
+    }, [id]);
 
-    const onReviewPressed = () => {
-      if(token){
-      try {
-        let titleform = reviewTitle.value;
-        let textform = reviewText.value;
-        const data = {
-          titulo : titleform,
-          texto : textform,
-          usuario : UID,
-          album: album.id,
-          artista: album.artists[0].id,
-          albumimg: album.images[0].url
-        }
-        let url = Url + "/reviews";
-        axios.post(url,
-            data,
-            {
-                headers: { 'Content-Type': 'application/json',
-                'x-token' : token },
-                withCredentials: true
-            }
-        ).then((res) => {
-          console.log(res.data.review.uid);
-          setModalRVisible(false);
-          setreviewText('');
-          setreviewTitle('');
-          showMessage({
-            message: "Review added to your collection!",
-            type: "success",
-            icon: "success",
-            onPress: () => {
-              navigation.navigate('ReviewScreen', {id: res.data.review.uid})
-            },
-          });
-          
-        })
-        .catch((error) => {
-          console.error(error)
-        });
-        
-    } catch (err) {
-        console.log(err);
-      }
-      }
-    }
+   
     if (!fontsLoaded) {
     return <AppLoading />
   }
@@ -302,7 +232,7 @@ export default function AlbumScreen({ navigation, route }) {
   return (
       <View style={styles.Fondo}>
         <ScrollView>
-        <Modal
+        {/*<Modal
         animationType="fade"
         transparent={true}
         visible={modalRVisible}
@@ -390,78 +320,61 @@ export default function AlbumScreen({ navigation, route }) {
           </View>
           </ScrollView>
         </View>
-      </Modal>
+        </Modal>*/}
       <View style={styles.encabezado}>
       <BackButton goBack={navigation.goBack} />
-      <PageHeader>Album details</PageHeader>
+      <PageHeader>Artist details</PageHeader>
       </View>
       <View style={styles.TopBanner}>
+      <View style={styles.Infoimg}>
+      {artist ? <Image source={{ uri: artist.images[0].url }} style={styles.image}  />:null } 
+      </View>
       <View style={styles.Info}>
-      {album ? <Image source={{ uri: album.images[0].url }} style={styles.image}  />:null } 
-      <Text style={styles.Infoname}>{album.name}</Text>
-      {album ? <TouchableOpacity onPress={() => navigation.navigate('ArtistScreen', {id: album.artists[0].id})}><Text style={styles.Infoart}>{album.artists[0].name}</Text></TouchableOpacity>:null } 
-      <Text style={styles.Infodate}>{fecha}</Text>
+      <Text style={styles.Infoname}>{artist.name}</Text>
       <Paragraph style={styles.Infoval}>
       <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text><Text style={styles.Infoval}>4.5/5</Text>
       </Paragraph>
-      <Text style={styles.Infogenero}>Average rating</Text>
-      </View>
+        
+        <Text style={styles.Infogenero}>Average rating</Text>
+        <Text style={styles.Infostat}>Total ratings</Text>
+        <Text style={styles.Infostat1}>0</Text>
+        <Text style={styles.Infostat}>Total works</Text>
+        {albums ? <Text style={styles.Infostat1}>{albums.length}</Text>:null}
+        
+        </View>
       <View style={styles.rateandtrackdiv}>
-      <View style={styles.RateDiv}>
-      <Text style={[
-       { fontFamily:'Raleway_400Regular',
-        marginTop: 5,
-        color: theme.colors.text,
-        textAlign:'center' }
-      ]}>Rate this album</Text>
-      <Rating
-          type="custom"
-          ratingColor="#D90FC8"
-          tintColor="#444444"
-          startingValue={5}
-          ratingCount={5}
-          imageSize={26}
-          style={{ paddingVertical: 2, marginBottom: 8}}
-        />
-        {UID ? <Button  onPress={() => clickReview()} style={styles.buttonRev}> <Text style={[
-        { fontFamily:'Raleway_400Regular',lineHeight: 19,
-        color: theme.colors.text }
-        ]}>Review</Text></Button>: <Button onPress={() => navigation.navigate('LoginScreen')} style={styles.buttonRev}> <Text style={[
-        { fontFamily:'Raleway_400Regular',lineHeight: 19,
-       color: theme.colors.text }
-       ]}>Review</Text></Button>}
-      {UID ?<Button  onPress={() => navigation.navigate('AddtolistScreen', {id: album.id, name: album.name, release_date_precision: album.release_date_precision, release_date: album.release_date, imagen: album.images[0].url, artista: album.artists[0].name})} style={styles.buttonRev}> <Text style={[
-       { fontFamily:'Raleway_400Regular',    
-       fontSize: 9, lineHeight: 19,
-      color: theme.colors.text }
-      ]}>Add to a List</Text></Button>: <Button onPress={() => navigation.navigate('LoginScreen')} style={styles.buttonRev}> <Text style={[
-        { fontFamily:'Raleway_400Regular',lineHeight: 19,
-       color: theme.colors.text, fontSize: 9 }
-       ]}>Add to a List</Text></Button>}
-      <View style={styles.shareDiv}>
-        <ClipboardButton style={styles.share}></ClipboardButton>
-        <SocialButtonFacebook style={styles.share}></SocialButtonFacebook>
-        <SocialButtonTwitter style={styles.share}></SocialButtonTwitter>
-      </View>
-      </View>
-      <View style={styles.TrackListDiv}>
-      <Button style={styles.buttonTrack} onPress={() => clickTracklist()}> <Text style={[
-       { fontFamily:'Raleway_400Regular',
-      color: theme.colors.text }
-      ]}>Tracklist</Text></Button>
-      </View>
+      
+     
+
       </View>
       </View>
       <LinearGradient
       colors={['#5F1880', '#713b8c', '#392F36']}
       style={styles.Banner}
       >      
-      <Text style={styles.Divtext}>Reviews From Friends</Text>
+      <Text style={styles.Divtext}>Discography</Text>
       </LinearGradient>
+      {albums ? <View style={styles.tracksDiv}>
+        <FlatList
+            data={albums}
+            renderItem={({ item }) => (
+                <><View style={{ flex: 1, flexDirection: 'column', margin: 1 , alignItems: 'center', marginBottom: 15}}>
+                    <TouchableOpacity onPress={() => navigation.navigate('AlbumScreen', { id: item.id })}><Image style={styles.imagetrack} source={{ uri: item.images[0].url }}></Image></TouchableOpacity><Text style={[
+                    { fontFamily:'Raleway_700Bold',
+                     color: theme.colors.text,
+                     fontSize: 11,
+                     textAlign: 'center',
+                     paddingVertical: 5 }
+                   ]}>{item.name}</Text></View></>
+                )}
+                numColumns={3}
+                keyExtractor={(item, index) => index}
+            />
+        </View>:null}
       <LinearGradient
       // Button Linear Gradient
       colors={['#5F1880', '#713b8c', '#392F36']}
-      style={styles.Banner}
+      style={styles.Banner2}
       >      
         <Text style={styles.Divtext}>Popular Reviews</Text>
       </LinearGradient>
@@ -478,6 +391,19 @@ export default function AlbumScreen({ navigation, route }) {
               }
         ]}>Seems like there are no reviews yet...</Text>
       </View> }
+      <LinearGradient
+      // Button Linear Gradient
+      colors={['#5F1880', '#713b8c', '#392F36']}
+      style={styles.Banner}
+      >      
+      <Text style={styles.Divtext}>Related Artists</Text>
+      </LinearGradient>
+      <View style={[
+              { marginBottom: 25
+              }
+        ]}>
+        {related ? <CustomSlider4 navigation={navigation} data={related} load={refresh} />:null}
+      </View>
   <View>
   </View>
   </ScrollView>
@@ -513,6 +439,19 @@ const styles = StyleSheet.create({
   centeredView:{
     height: '100%'
   },
+  imagetrack: {
+    width: 85,
+    height: 85,
+    marginBottom: 1,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 10,
+  },
+  tracksDiv:{
+    justifyContent: 'center',
+    flex: 1,
+    marginTop: 5
+  },
   rating:{
     marginTop: 3,
     marginBottom: 8
@@ -540,11 +479,13 @@ const styles = StyleSheet.create({
   TopBanner:{
     flexDirection: 'row',
     marginTop: 4,
+    paddingHorizontal: 30,
+    marginBottom: 15
   },
   TrackListDiv: {
     width: '100%'
     },
-  encabezado:{
+    encabezado:{
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',   
@@ -564,10 +505,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignItems: 'center'
   },
+  Banner2: {
+    backgroundColor: '#fff',
+    height: 60,
+    marginTop: 0,
+    alignItems: 'center'
+  },
   image: {
     width: 140,
     height: 140,
-    marginTop: 25,
+    marginTop: 10,
     marginBottom: 1,
     marginLeft: 0,
     alignItems:'center',
@@ -581,9 +528,20 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontFamily:'Raleway_400Regular' 
   },
+  Divtext2:{
+    fontSize: 17,
+    marginTop: 11,
+    color: theme.colors.text,
+    fontFamily:'Raleway_400Regular' 
+  },
   Info:{
     alignItems: 'center',
-    width:'55%'
+    width:'65%',
+  },
+  Infoimg:{
+    alignItems: 'center',
+    width:'40%',
+    marginLeft: 10
   },
   Info2:{
     alignItems: 'center',
@@ -601,14 +559,8 @@ const styles = StyleSheet.create({
   Infoart:{
     fontSize: 16,
     marginTop: 4,
-    color: theme.colors.secondary,
-    fontFamily:'Raleway_700Bold',
-  },
-  Infodate:{
-    fontSize: 16,
-    marginTop: 4,
     color: theme.colors.text,
-    fontFamily:'Raleway_400Regular',
+    fontFamily:'Raleway_400Regular' 
   },
   Infoval:{
     fontSize: 20,
@@ -622,21 +574,30 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontFamily:'Raleway_400Regular' 
   },
+  Infostat:{
+    fontSize: 16,
+    color: theme.colors.text,
+    fontFamily:'Raleway_700Bold' 
+  },
+  Infostat1:{
+    fontSize: 16,
+    color: theme.colors.text,
+    fontFamily:'Raleway_400Regular_Italic' 
+  },
   RateDiv:{
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
     backgroundColor: '#444444',
     borderRadius: 10,
-    height: 220,
     width: '100%',
-    marginTop: 25,
+    marginTop: 15,
   },
   shareDiv:{
     width: '100%',
     flexDirection: 'row',
     marginTop: 1,
     justifyContent:'space-between',
-    marginBottom: 24,
+    padding:4,
   },
   modalView: {
     top: '5%',
@@ -658,14 +619,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Raleway_400Regular',
     fontSize: 21,
     color: theme.colors.text
-  },
-  containerflecha: {
-    position: 'absolute',
-    left: 4
-  },
-  flecha: {
-    width: 24,
-    height: 24,
-    marginLeft: 10
-  },
+  }
 })

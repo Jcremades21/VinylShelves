@@ -46,6 +46,7 @@ import {
     Raleway_300Light_Italic,
     Raleway_400Regular_Italic,
   } from '@expo-google-fonts/raleway';
+import album from '../../Backend/models/album';
 
 export default function AlbumScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = React.useState(true);
@@ -233,6 +234,7 @@ export default function AlbumScreen({ navigation, route }) {
                         imagen: track.album.images[0].url ,
                         release_date: fechasplit,
                         release_date_precision: track.album.release_date_precision,
+                        idart: album.artists[0].id
                     }
                     
                     }))
@@ -1010,12 +1012,13 @@ export default function AlbumScreen({ navigation, route }) {
                      color: theme.colors.text,
                      fontSize: 11,
                      textAlign: 'center' }
-                   ]}>{item.nombre}</Text><Text style={[
+                   ]}>{item.nombre}</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('ArtistScreen', {id: item.idart})}><Text style={[
                     { fontFamily:'Raleway_700Bold',
                      color: theme.colors.text,
                      fontSize: 11,
                      textAlign: 'center' }
-                   ]}>{item.artista}</Text></View></>
+                   ]}>{item.artista}</Text></TouchableOpacity></View></>
                 )}
                 numColumns={3}
                 keyExtractor={(item, index) => index}
