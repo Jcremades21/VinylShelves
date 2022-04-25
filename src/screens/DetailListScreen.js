@@ -933,7 +933,7 @@ export default function AlbumScreen({ navigation, route }) {
                 }
              ]}>
             {list ?<Image source={{ uri: list.usuario.imagen }} style={styles.imageusu}  />:null } 
-            {list ?<TouchableOpacity style={[
+            {list ?<TouchableOpacity onPress={() => navigation.navigate('UserScreen', { id: list.usuario._id })} style={[
                 { marginLeft: 5,
                 marginTop: 5
                 }

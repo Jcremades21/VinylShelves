@@ -42,7 +42,8 @@ import SearchDropDown from '../components/SearchDropdown';
 export default function ListsScreen({ navigation, route }) {
     const [usutoken, setUsutoken] = useState('');  
     const [UID, setUID] = useState('');  
-    const [token, setToken] = useState('');  
+    const [usu, setUsu] = useState('');  
+    const [token, setToken] = useState(''); 
     const [listTitle, setlistTitle] = useState('');  
     const [listText, setlistText] = useState('');  setSearch
     const [toggleCheckBox, setToggleCheckBox] = useState(false)
@@ -51,6 +52,7 @@ export default function ListsScreen({ navigation, route }) {
     const [searchResults, setSearchResults] = useState([])
     const [listContent, setListContent] = useState([])
     const [arrayContent, setArrayContent] = useState([])
+    const [portadasContent, setPortadasContent] = useState([])
     const [selectedLanguage, setSelectedLanguage] = useState();
     const [modalRVisible, setModalRVisible] = useState(false);
     const [trackadded, setTrackAdded] = useState(false);
@@ -98,6 +100,19 @@ export default function ListsScreen({ navigation, route }) {
         //console.log(ret.useremail);
             setUsutoken(ret.token);
             setUID(ret.uid);
+            let url = Url + "/usuarios?id=" + ret.uid;
+            console.log(url);
+            axios.get(url,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : ret.token },
+                    withCredentials: true
+                }
+            ).then((res) => {   
+              //console.log(res.data.listas);  
+              console.log(res.data); 
+              setUsu(res.data.usuarios);
+            });
         })
         .catch(err => {
         // any exception including data not found
@@ -140,7 +155,7 @@ export default function ListsScreen({ navigation, route }) {
       ).then((res) => {
         console.log(res.data.album.uid);
         setArrayContent((arrayContent) => arrayContent.concat(res.data.album.uid))
-
+        setPortadasContent((portadasContent) => portadasContent.concat(res.data.album.imagen))
       })
       .catch((error) => {
         console.error(error)
@@ -203,11 +218,14 @@ export default function ListsScreen({ navigation, route }) {
       try {
         let titleform = listTitle.value;
         let textform = listText.value;
+        let listcreaar = usu.user_lists;
+        console.log('PORTADASSSS' + portadasContent);
         const data = {
           titulo : titleform,
           descripcion : textform,
           usuario : UID,
           array: arrayContent,
+          portadas: portadasContent,
           public: !toggleCheckBox
         }
         let url = Url + "/listal";
@@ -220,8 +238,38 @@ export default function ListsScreen({ navigation, route }) {
             }
         ).then((res) => {
           console.log(res.data);
+          listcreaar.push(res.data.lista.uid);
           setlistCreated(res.data.lista.uid)
-          setModalRVisible(true);
+          const usuario = {
+            activo: usu.activo,
+            baneado: usu.baneado,
+            email: usu.email,
+            favs: usu.favos,
+            imagen: usu.imagen,
+            list_liked: usu.list_liked,
+            notis: usu.notis,
+            notis_act : usu.notis_act,
+            ratings: usu.ratings,
+            reviews: usu.reviews,
+            rol: usu.rol,
+            seguidores: usu.seguidores,
+            seguidos: usu.seguidos,
+            uid: usu.uid,
+            user_lists: listcreaar,
+            username: usu.username
+           }
+           let urlu = Url + "/usuarios/" + UID;
+           axios.put(urlu,
+            usuario,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : usutoken },
+                  withCredentials: true
+              }
+          ).then((res2) => {
+            console.log(res2.status);
+            setModalRVisible(true);
+          });
         })
         .catch((error) => {
           console.error(error)

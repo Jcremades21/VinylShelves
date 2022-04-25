@@ -11,6 +11,9 @@ const ListalSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Album'
     }],
+    portadas:  [ {
+        type: String
+    }],
     comentarios: [{
         type: Schema.Types.ObjectId,
         ref: 'Comentario'

@@ -27,6 +27,16 @@ import DetailListScreen from './src/screens/DetailListScreen';
 import AddtolistScreen from './src/screens/AddtolistScreen'; 
 import ArtistScreen from './src/screens/ArtistScreen';
 import FilterScreen from './src/screens/FilterScreen';
+import EditInfo from './src/screens/EditInfo';
+import UserReviews from './src/screens/UserReviews';
+import UserLists from './src/screens/UserLists';
+import UserRatings from './src/screens/UserRatings';
+import ChangePassScreen from './src/screens/ChangePassScreen';
+import AccountInfoScreen from './src/screens/AccountInfoScreen';
+import NotSettingsScreen from './src/screens/NotSettingsScreen';
+import DeleteAccountScreen from './src/screens/DeleteAccountScreen';
+import FollowingScreen from './src/screens/FollowingScreen';
+import UserScreen from './src/screens/UserScreen';
 
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator();
@@ -94,7 +104,6 @@ function LandingTabs() {
       </Tab.Navigator>
   );
 }
-
 const HomeTabs = () => (
     <Tab.Navigator
           screenOptions={({ route }) => ({
@@ -187,6 +196,15 @@ export default function App() {
           <Stack.Screen name="ArtistScreen" component={ArtistScreen} />
           <Stack.Screen name="SearchScreen" component={SearchScreen} />
           <Stack.Screen name="FilterScreen" component={FilterScreen} />
+          <Stack.Screen name="EditInfo" component={EditInfo} />
+          <Stack.Screen name="UserReviews" component={UserReviews} />
+          <Stack.Screen name="UserLists" component={UserLists} />
+          <Stack.Screen name="AccountInfoScreen" component={AccountInfoScreen} />
+          <Stack.Screen name="ChangePassScreen" component={ChangePassScreen} />
+          <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
+          <Stack.Screen name="NotSettingsScreen" component={NotSettingsScreen} />
+          <Stack.Screen name="FollowingScreen" component={FollowingScreen} />
+          <Stack.Screen name="UserScreen" component={UserScreen} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}

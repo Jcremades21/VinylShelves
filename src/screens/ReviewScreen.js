@@ -709,7 +709,7 @@ export default function ReviewScreen({ navigation, route }) {
              ]}>
         {review && inter ? <><Text style={styles.titulo}>{review.titulo} </Text><Text style={styles.titulo2}>by</Text></>: null}
         
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+        <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { id: review.usuario._id })}>
               <View style={styles.usuDiv}>    
               {review.usuario ?<Image source={{ uri: review.usuario.imagen }} style={styles.imageusulink}></Image>:null }
               {review.usuario ?<Text style={styles.link}>{review.usuario.username}</Text>:null }
@@ -731,7 +731,7 @@ export default function ReviewScreen({ navigation, route }) {
           {review.usuario ?<View style={styles.edit}>
           {UID == review.usuario._id && <TouchableOpacity onPress={() => clickEdit()}><FontAwesome name="pencil-square-o" size={24} color="white" /></TouchableOpacity>}
           </View>:null}
-       <TouchableOpacity style={[
+       <TouchableOpacity onPress={() => navigation.navigate('UserReviews', { id: UID })} style={[
        { flexDirection: 'row', marginRight: 10}
         ]}><Entypo name="book" size={24} color="white" />{review.usuario ? <Text style={[
             {   color: theme.colors.text,

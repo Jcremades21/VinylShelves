@@ -35,7 +35,6 @@ router.put('/:id', [
     // campos que son opcionales que vengan pero que si vienen queremos validar el tipo
     check('activo', 'El estado activo debe ser true/false').optional().isBoolean(),
     validarCampos,
-    validarRol
 ], actualizarUsuario);
 router.delete('/:id', [
     validarJWT,

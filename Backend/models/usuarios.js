@@ -45,7 +45,8 @@ const UsuarioSchema = Schema({
         ref: 'Rating'
     }],
     favs: [{
-        type: String
+        type: String,
+        default: []
     }],
     bio: {
         type: String
@@ -62,7 +63,15 @@ const UsuarioSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Notificacion'
     }],
-    notis_act:{
+    notis_act_nf:{
+        type: Boolean,
+        default: true
+    },
+    notis_act_nlikes:{
+        type: Boolean,
+        default: true
+    },
+    notis_act_ncomments:{
         type: Boolean,
         default: true
     },

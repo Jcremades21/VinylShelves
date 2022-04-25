@@ -28,6 +28,7 @@ app.use('/api/hilos', require('./routes/hilo'));
 app.use('/api/comentarios', require('./routes/comentario'));
 app.use('/api/listal', require('./routes/listal'));
 app.use('/api/listar', require('./routes/listar'));
+app.use('/api/upload', require('./routes/uploads'));
 
 // Abrir la aplicacíon en el puerto 3000
 app.listen(process.env.PORT, () => {

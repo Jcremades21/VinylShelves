@@ -36,7 +36,7 @@ const obtenerUsuarios = async(req, res) => {
         if (id) {
 
             [usuarios, total] = await Promise.all([
-                Usuario.findById(id),
+                Usuario.findById(id).populate('reviews', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                 Usuario.countDocuments()
             ]);
 
@@ -45,12 +45,12 @@ const obtenerUsuarios = async(req, res) => {
         else {
             if (texto) {
                 [usuarios, total] = await Promise.all([
-                    Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).limit(registropp),
+                    Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                     Usuario.countDocuments({ $or: [{ username: textoBusqueda}, { email: textoBusqueda }] })
                 ]);
             } else {
                 [usuarios, total] = await Promise.all([
-                    Usuario.find({}).skip(desde).limit(registropp),
+                    Usuario.find({}).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                     Usuario.countDocuments()
                 ]);
             }
@@ -108,13 +108,13 @@ const actualizarUsuario = async(req, res) => {
     try {
         // Para actualizar usuario o eres admin o eres usuario del token y el uid que nos llega es el mismo
         const token = req.header('x-token');
+
         if (!(infoToken(token).rol === 'ADMIN' || infoToken(token).uid === uid)) {
             return res.status(400).json({
                 ok: false,
                 msg: 'El usuario no tiene permisos para actualizar este perfil'
             });
         }
-
         const existeEmail = await Usuario.findOne({ email: email });
         if (existeEmail) {
             if (existeEmail._id != uid) {
@@ -211,10 +211,9 @@ const borrarUsuario = async(req, res) => {
 
 
 const actualizarPassword = async(req, res = response) => {
-
     const uid = req.params.id;
     const { password, nuevopassword, nuevopassword2 } = req.body;
-
+    
     try {
         const token = req.header('x-token');
         // lo puede actualizar un administrador o el propio usuario del token

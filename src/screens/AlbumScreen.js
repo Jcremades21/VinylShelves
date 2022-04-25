@@ -61,6 +61,8 @@ export default function AlbumScreen({ navigation, route }) {
   const [reviewText, setreviewText] = useState({ value: '', error: '' })
   const [success, setSuccess] = useState(false);
   const [errMsg, setErrMsg] = useState('');
+  const [usu, setUsu] = useState('');
+
   const { id, back } = route.params;
 
     
@@ -187,6 +189,20 @@ export default function AlbumScreen({ navigation, route }) {
           // found data go to then()
           //console.log(ret.useremail);  
           setUsuUID(ret.uid);
+          let url = Url + "/usuarios?id=" + ret.uid;
+            console.log(url);
+            axios.get(url,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : ret.token },
+                    withCredentials: true
+                }
+            ).then((res) => {   
+              //console.log(res.data.listas);  
+              console.log(res.data); 
+              setUsu(res.data.usuarios);
+              setusuToken(ret.token)
+            });
         })
         .catch(err => {
           // any exception including data not found
@@ -203,6 +219,7 @@ export default function AlbumScreen({ navigation, route }) {
         });
        
      }, []); 
+
      React.useEffect(() => {
       let array = [];
       let url = Url + "/reviews/?album=" + id;
@@ -259,6 +276,9 @@ export default function AlbumScreen({ navigation, route }) {
           artista: album.artists[0].id,
           albumimg: album.images[0].url
         }
+        let revarray = usu.reviews;
+        
+
         let url = Url + "/reviews";
         axios.post(url,
             data,
@@ -269,17 +289,53 @@ export default function AlbumScreen({ navigation, route }) {
             }
         ).then((res) => {
           console.log(res.data.review.uid);
-          setModalRVisible(false);
-          setreviewText('');
-          setreviewTitle('');
-          showMessage({
-            message: "Review added to your collection!",
-            type: "success",
-            icon: "success",
-            onPress: () => {
-              navigation.navigate('ReviewScreen', {id: res.data.review.uid})
-            },
+          revarray.push(res.data.review.uid);
+          const usuario = {
+            activo: usu.activo,
+            baneado: usu.baneado,
+            email: usu.email,
+            favs: usu.favos,
+            imagen: usu.imagen,
+            list_liked: usu.list_liked,
+            notis: usu.notis,
+            notis_act : usu.notis_act,
+            ratings: usu.ratings,
+            reviews: revarray,
+            rol: usu.rol,
+            seguidores: usu.seguidores,
+            seguidos: usu.seguidos,
+            uid: usu.uid,
+            user_lists: usu.user_lists,
+            username: usu.username
+           }
+           let urlu = Url + "/usuarios/" + UID;
+          axios.put(urlu,
+            usuario,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : usutoken },
+                  withCredentials: true
+              }
+          ).then((res3) => {
+            console.log(res3.status);
+            console.log(res3.data);
+            setLoad(!load);
+            setModalRVisible(false);
+            setreviewText('');
+            setreviewTitle('');
+            showMessage({
+              message: "Review added to your collection!",
+              type: "success",
+              icon: "success",
+              onPress: () => {
+                navigation.navigate('ReviewScreen', {id: res.data.review.uid})
+              },
+            });
+          })
+          .catch((error) => {
+            console.error(error)
           });
+
           
         })
         .catch((error) => {
@@ -465,7 +521,10 @@ export default function AlbumScreen({ navigation, route }) {
       >      
         <Text style={styles.Divtext}>Popular Reviews</Text>
       </LinearGradient>
-      {reviewspop.length > 0 && <View>
+      {reviewspop.length > 0 && <View style={[
+              { marginBottom: 15
+              }
+        ]}>
       { reviewspop ? <CustomSlider2 navigation={navigation} data={reviewspop} />:null}
       </View> }
       {reviewspop.length == 0 && <View>

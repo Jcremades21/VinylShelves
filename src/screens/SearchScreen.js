@@ -362,7 +362,7 @@ export default function SearchScreen({ navigation, route }) {
 
                           searchResultsUsers.slice(0, 4).map(item => {
                                   return (
-                                    <TouchableOpacity onPress={() => navigation.navigate('Profile', { id: item.id })}>
+                                    <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { id: item.id })}>
                                       <View style={styles.infoDiv}>
                                           <Image source={{ uri: item.imagen }} style={styles.image2}  />
                                           <View  style={styles.restitle2}>
