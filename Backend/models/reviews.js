@@ -22,6 +22,12 @@ const ReviewSchema = Schema({
     album: {
         type: String
     },
+    albumtitle: {
+        type: String
+    },
+    albumart: {
+        type: String
+    },
     albumimg: {
         type: String
     },

@@ -36,7 +36,7 @@ const obtenerUsuarios = async(req, res) => {
         if (id) {
 
             [usuarios, total] = await Promise.all([
-                Usuario.findById(id).populate('reviews', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                Usuario.findById(id).populate('reviews', '-__v').populate('ratings', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                 Usuario.countDocuments()
             ]);
 
@@ -45,12 +45,12 @@ const obtenerUsuarios = async(req, res) => {
         else {
             if (texto) {
                 [usuarios, total] = await Promise.all([
-                    Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                    Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).limit(registropp).populate('reviews', '-__v').populate('ratings', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                     Usuario.countDocuments({ $or: [{ username: textoBusqueda}, { email: textoBusqueda }] })
                 ]);
             } else {
                 [usuarios, total] = await Promise.all([
-                    Usuario.find({}).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                    Usuario.find({}).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('ratings', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                     Usuario.countDocuments()
                 ]);
             }

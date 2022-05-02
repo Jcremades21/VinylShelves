@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react'
-import { TouchableOpacity, StyleSheet, View, MsgBox, Text, SafeAreaView, ScrollView } from 'react-native'
+import { TouchableOpacity, FlatList, StyleSheet, View, MsgBox, Text, SafeAreaView, ScrollView, Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
 import { Credentials } from '../helpers/credentials';
 import Background from '../components/Background'
@@ -35,6 +35,7 @@ export default function Landing({ navigation }) {
   const [news, setNews] = useState([]);
   const [token, setToken] = useState('');  
   const [reviews, setReviews] = useState([]);   
+  const [popusers, setUsers] = useState([]);   
 
   const spotify = Credentials();  
   //insfav();
@@ -182,6 +183,28 @@ export default function Landing({ navigation }) {
       setReviews(array); 
     }, []); 
 
+    React.useEffect(() => {
+      let array = [];
+      let url = Url + "/usuarios";
+      axios.get(url,
+          {
+              headers: { 'Content-Type': 'application/json',
+              'x-token' : token },
+              withCredentials: true
+          }
+      ).then((res) => {
+        let array = [];
+        res.data.usuarios.forEach( (element) => {
+          array.push(element);
+        });
+        array.sort((a, b) => a.seguidores.length > b.seguidores.length ? 1 : -1)
+        setUsers(array.slice(0, 6))
+      })
+      .catch((error) => {
+        console.error(error)
+      });
+    }, []); 
+
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
@@ -250,6 +273,25 @@ export default function Landing({ navigation }) {
         <Text style={styles.Divtext}>Popular Users</Text>
       </LinearGradient> 
       <View>
+      { popusers ?
+            <><FlatList
+                            data={popusers}
+                            renderItem={({ item }) => (
+                                <><View style={{ flex: 1, flexDirection: 'column', margin: 1, alignItems: 'center', marginBottom: 5 }}>
+                                    <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { id: item.uid })}>
+                                        <View style={styles.infoDiv}>
+                                            <Image source={{ uri: item.imagen }} style={styles.image2} />
+                                            <Text numberOfLines={1} style={styles.itemText}>{item.username}</Text>
+                                            <View>
+                                                <Paragraph><Text style={styles.itemText2}>{item.reviews.length}</Text><Text style={styles.itemText3}> reviews </Text><Text style={styles.itemText2}>{item.user_lists.length+item.list_liked.length}</Text><Text style={styles.itemText3}> lists</Text></Paragraph>
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View></>
+                            )}
+                            numColumns={2}
+                            keyExtractor={(item, index) => index} /></>
+            :null}
       </View>
       </View>
     </ScrollView>
@@ -262,12 +304,47 @@ const styles = StyleSheet.create({
     height: '100%',
     fontFamily: 'Raleway_400Regular'
   },
+  itemText: {
+    color: theme.colors.text,
+    fontFamily:'Raleway_700Bold',
+    fontSize: 18,
+    marginTop: 5,
+  },
+  itemText2: {
+    color: theme.colors.text,
+    paddingHorizontal: 10,
+    fontFamily:'Raleway_400Regular',
+    fontSize: 17,
+    width: 185
+  },
+  image2: {
+    width: 100,
+    height: 100,
+    alignItems:'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 5,
+  },
   encabezado:{
     alignItems: 'center',
     width: '75%',
     alignSelf: 'center',
     marginTop: 30,
     fontFamily:'Raleway_400Regular' 
+  },
+  infoDiv:{
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    alignItems: 'center'
+  },
+  itemText3: {
+    color: theme.colors.secondary,
+    paddingHorizontal: 10,
+    fontFamily:'Raleway_400Regular',
+    fontSize: 17,
+    textAlign: 'center',
+    marginTop: 10,
+    width: 190
   },
   link:{
     fontFamily: 'Raleway_700Bold',

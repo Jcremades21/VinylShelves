@@ -37,7 +37,7 @@ import NotSettingsScreen from './src/screens/NotSettingsScreen';
 import DeleteAccountScreen from './src/screens/DeleteAccountScreen';
 import FollowingScreen from './src/screens/FollowingScreen';
 import UserScreen from './src/screens/UserScreen';
-
+ 
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator();
 const dashboardName = "Dashboard";
@@ -205,6 +205,7 @@ export default function App() {
           <Stack.Screen name="NotSettingsScreen" component={NotSettingsScreen} />
           <Stack.Screen name="FollowingScreen" component={FollowingScreen} />
           <Stack.Screen name="UserScreen" component={UserScreen} />
+          <Stack.Screen name="UserRatings" component={UserRatings} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}

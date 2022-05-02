@@ -45,11 +45,15 @@ import {
 export default function AlbumScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [load, setLoad] = React.useState(false);
+  const [media, setMedia] = React.useState(0);
   const [token, setToken] = useState(''); 
+  const [contador, setContador] = useState(0); 
   const [usutoken, setusuToken] = useState('');   
   const [album, setAlbum] = useState('');  
+  const [albumid, setAlbumID] = useState('6253673aa7c75d22b8bd8cd2');  
   const [UID, setUsuUID] = useState('');  
   const [news, setNews] = useState([]);
+  const [reviewsfriends, setReviewsfriends] = useState([]);
   const [reviewspop, setReviewspop] = useState([]);
   const [fecha, setFecha] = useState('');  
   const [audioTracks, setAudioTracks] = useState([]);
@@ -62,6 +66,9 @@ export default function AlbumScreen({ navigation, route }) {
   const [success, setSuccess] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [usu, setUsu] = useState('');
+  const [ratinges, setRatinges] = useState('');
+  const [exrating, setEXRating] = useState(false);
+  const [ratid, setRatid] = useState(false);
 
   const { id, back } = route.params;
 
@@ -141,6 +148,7 @@ export default function AlbumScreen({ navigation, route }) {
         .then (albumResponse => {        
          console.log(albumResponse.data.tracks.items[0].preview_url);
          setAlbum(albumResponse.data);
+         setAlbumID(albumResponse.data.id);
          setAudioTracks(albumResponse.data.tracks.items);
          if(albumResponse.data.release_date_precision!='year'){
            let split = albumResponse.data.release_date.split('-');
@@ -199,9 +207,71 @@ export default function AlbumScreen({ navigation, route }) {
                 }
             ).then((res) => {   
               //console.log(res.data.listas);  
-              console.log(res.data); 
               setUsu(res.data.usuarios);
-              setusuToken(ret.token)
+              setusuToken(ret.token);
+              setUsuUID(ret.uid);
+              //sacamos reviews de amigos
+              res.data.usuarios.seguidores.forEach( (element) => {
+                element.reviews.forEach( (element2) => {
+                    let url2 = Url + "/reviews?id=" + element2;
+                    console.log(url2);
+                    axios(url2, {
+                      headers: {
+                        'Content-Type' : 'application/json'
+                      },
+                      method: 'GET'
+                    })
+                    .then(res3 => {
+                      if(res3.data.reviews.album == id){
+                        const data = {
+                          id: res3.data.reviews.uid,
+                          albumimg: res3.data.reviews.albumimg,
+                          albumname: res3.data.reviews.albumtitle,
+                          albumartist: res3.data.reviews.albumart,
+                          usuimg: res3.data.reviews.usuario.imagen,
+                          titulo: res3.data.reviews.titulo,
+                          texto: res3.data.reviews.texto,
+                          likes: res3.data.reviews.likes.length,
+                          comments: res3.data.reviews.comentarios.length,
+                          val: '5',
+                        }
+                      setReviewsfriends((reviewsfriends) => reviewsfriends.concat(data))
+                      }
+                      });
+                     });
+                    });
+              //comprobamos rating
+              let existe = false;
+              axios('https://accounts.spotify.com/api/token', {
+                headers: {
+                  'Content-Type' : 'application/x-www-form-urlencoded',
+                  'Authorization' : 'Basic ' + btoa(spotify.ClientId + ':' + spotify.ClientSecret)      
+                },
+                data: 'grant_type=client_credentials',
+                method: 'POST'
+              })
+              .then(tokenResponse => { 
+              axios('https://api.spotify.com/v1/albums/' + id, {
+                method: 'GET',
+                headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
+              })
+              .then (albumResponse => {        
+              res.data.usuarios.ratings.forEach( (element) => {
+                if(element.album == albumResponse.data.id){
+                  setEXRating(true);
+                  existe = true;
+                  setRatinges(element.estrellas);
+                  setRatid(element._id);
+                  console.log('existe');
+                }
+              });
+              if(!existe){
+                setRatinges(0);
+              }
+              });
+             
+            });
+
             });
         })
         .catch(err => {
@@ -218,12 +288,128 @@ export default function AlbumScreen({ navigation, route }) {
           }
         });
        
-     }, []); 
+     }, [load]); 
+
+     function ratingCompleted(rating) {
+       console.log("Rating is: " + rating);
+       setRatinges(rating);
+       }
+
+     React.useEffect(() => {
+       try {
+        const data = {
+          estrellas: ratinges,
+          album: album.id,
+          albumimg: album.images[0].url,
+          albumtit: album.name,
+          albumart: album.artists[0].name,
+          usuario: UID
+        }
+        let ratarray = usu.ratings;
+        if(exrating){ //si existe hacemos PUT
+        let url = Url + "/ratings/" + ratid;
+        axios.put(url,
+            data,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : usutoken },
+                withCredentials: true
+            }
+        ).then((res) => {
+          console.log(res.data);
+          setLoad(!load);
+            console.log('actualiza');
+          });
+        }
+        else {
+          let url = Url + "/ratings";
+          axios.post(url,
+            data,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : usutoken },
+                withCredentials: true
+            }
+        ).then((res) => {
+          console.log(res.data);
+          ratarray.push(res.data.rat.uid);
+          const usuario = {
+            activo: usu.activo,
+            baneado: usu.baneado,
+            email: usu.email,
+            favs: usu.favos,
+            imagen: usu.imagen,
+            list_liked: usu.list_liked,
+            notis: usu.notis,
+            notis_act : usu.notis_act,
+            ratings: ratarray,
+            reviews: usu.reviews,
+            rol: usu.rol,
+            seguidores: usu.seguidores,
+            seguidos: usu.seguidos,
+            uid: usu.uid,
+            user_lists: usu.user_lists,
+            username: usu.username
+           }
+           let urlu = Url + "/usuarios/" + UID;
+          axios.put(urlu,
+            usuario,
+              {
+                  headers: { 'Content-Type': 'application/json',
+                  'x-token' : usutoken },
+                  withCredentials: true
+              }
+          ).then((res3) => {
+            setLoad(!load);
+          })
+          .catch((error) => {
+            console.error(error)
+          });
+
+          
+        })
+        .catch((error) => {
+          console.error(error)
+        });
+        }
+        } catch (err) {
+          console.log(err);
+        }
+      
+      }, [ratinges]); 
+
+      React.useEffect(() => { //valoracion media
+        let url = Url + "/ratings?pag=0";
+        let suma = 0;
+        let total = 0;
+
+        axios.get(url,
+          {
+              headers: { 'Content-Type': 'application/json',
+              'x-token' : usutoken },
+              withCredentials: true
+          }
+      ).then((res) => {
+        res.data.ratings.forEach( (element) => {
+          if(element.album == id){
+           suma = suma + element.estrellas;
+           total++;
+          }
+        })
+        console.log(suma);
+        console.log(total);
+        if(suma!=0){
+        setMedia((suma/total).toFixed(1));
+        }
+        else{
+          setMedia('0');
+        }
+      });
+      }, [ratinges]); 
 
      React.useEffect(() => {
       let array = [];
       let url = Url + "/reviews/?album=" + id;
-      console.log("EYYYYYYYYYYYYYYY" + url);
       axios.get(url,
           {
               headers: { 'Content-Type': 'application/json',
@@ -246,7 +432,7 @@ export default function AlbumScreen({ navigation, route }) {
                 texto: element.texto,
                 likes: element.likes.length,
                 comments: '0',
-                val: '5',
+                val: ratinges,
               }
               array.push(data);
               console.log(albumResponse.body.images[0].url);
@@ -274,7 +460,9 @@ export default function AlbumScreen({ navigation, route }) {
           usuario : UID,
           album: album.id,
           artista: album.artists[0].id,
-          albumimg: album.images[0].url
+          albumimg: album.images[0].url,
+          albumart: album.artists[0].name,
+          albumtitle: album.name
         }
         let revarray = usu.reviews;
         
@@ -347,9 +535,12 @@ export default function AlbumScreen({ navigation, route }) {
       }
       }
     }
+
+
     if (!fontsLoaded) {
     return <AppLoading />
   }
+
 
   var modalBackgroundStyle = {
     backgroundColor: 'rgba(0, 0, 0, 0.5)'
@@ -458,7 +649,7 @@ export default function AlbumScreen({ navigation, route }) {
       {album ? <TouchableOpacity onPress={() => navigation.navigate('ArtistScreen', {id: album.artists[0].id})}><Text style={styles.Infoart}>{album.artists[0].name}</Text></TouchableOpacity>:null } 
       <Text style={styles.Infodate}>{fecha}</Text>
       <Paragraph style={styles.Infoval}>
-      <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text><Text style={styles.Infoval}>4.5/5</Text>
+      <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text>{media ? <Text style={styles.Infoval}>{media}/5</Text>:null}
       </Paragraph>
       <Text style={styles.Infogenero}>Average rating</Text>
       </View>
@@ -470,15 +661,25 @@ export default function AlbumScreen({ navigation, route }) {
         color: theme.colors.text,
         textAlign:'center' }
       ]}>Rate this album</Text>
-      <Rating
+      {UID ? <Rating
           type="custom"
           ratingColor="#D90FC8"
           tintColor="#444444"
-          startingValue={5}
+          startingValue={ratinges}
           ratingCount={5}
           imageSize={26}
+          onFinishRating={ratingCompleted}
           style={{ paddingVertical: 2, marginBottom: 8}}
-        />
+        />:<Rating
+        type="custom"
+        ratingColor="#D90FC8"
+        tintColor="#444444"
+        startingValue={ratinges}
+        ratingCount={5}
+        imageSize={26}
+        readonly
+        style={{ paddingVertical: 2, marginBottom: 8}}
+      />}
         {UID ? <Button  onPress={() => clickReview()} style={styles.buttonRev}> <Text style={[
         { fontFamily:'Raleway_400Regular',lineHeight: 19,
         color: theme.colors.text }
@@ -514,6 +715,22 @@ export default function AlbumScreen({ navigation, route }) {
       >      
       <Text style={styles.Divtext}>Reviews From Friends</Text>
       </LinearGradient>
+      {reviewsfriends.length > 0 && <View style={[
+              { marginBottom: 15
+              }
+        ]}>
+      { reviewsfriends ? <CustomSlider2 navigation={navigation} data={reviewsfriends} />:null}
+      </View> }
+      {reviewsfriends.length == 0 && <View>
+        <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 14,
+              alignSelf: 'center'
+              }
+        ]}>Seems like there are no reviews yet...</Text>
+      </View> }
       <LinearGradient
       // Button Linear Gradient
       colors={['#5F1880', '#713b8c', '#392F36']}

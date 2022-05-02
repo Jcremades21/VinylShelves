@@ -7,10 +7,22 @@ const RatingSchema = Schema({
         type: Number,
         required: true,
     },
-    album:  [{
+    album: {
         type: String,
         required: true
-    }],
+    },
+    albumid: {
+        type: String
+    },
+    albumimg: {
+        type: String
+    },
+    albumart: {
+        type: String
+    },
+    albumtit: {
+        type: String
+    },
     usuario: {
         type: Schema.Types.ObjectId,
         ref: 'Usuario'

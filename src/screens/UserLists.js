@@ -102,6 +102,23 @@ export default function UserLists({ navigation, route }) {
         .catch(err => {
         // any exception including data not found
         // goes to catch()
+        let url = Url + "/usuarios?id=" + id;
+            console.log(url);
+            axios.get(url,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : usutoken },
+                    withCredentials: true
+                }
+            ).then((res) => {   
+              //console.log(res.data.listas);  
+              //console.log(res.data); 
+              setUsu(res.data.usuarios);
+              console.log(res.data.usuarios);
+            })
+            .catch((error) => {
+              console.error(error)
+        });
         console.warn(err.message);
         switch (err.name) {
             case 'NotFoundError':

@@ -568,7 +568,7 @@ export default function ProfileScreen({ navigation, route }) {
                 <Text style={styles.link}>Lists</Text>
                 <Text style={styles.link2}>({usu.list_liked.length + usu.user_lists.length})</Text>
                 </View></TouchableOpacity>
-                <View style={[
+                <TouchableOpacity onPress={() => navigation.navigate('UserRatings', {id: UID})}><View style={[
                  {   flexDirection: 'row',
                  paddingVertical: 10
                 }
@@ -579,7 +579,7 @@ export default function ProfileScreen({ navigation, route }) {
                 ]} />
                 <Text style={styles.link}>Ratings</Text>
                 <Text style={styles.link2}>({usu.ratings.length})</Text>
-                </View>
+                </View></TouchableOpacity>
             </View>:null}
             </ScrollView>
         </View>

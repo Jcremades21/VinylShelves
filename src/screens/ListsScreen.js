@@ -43,7 +43,6 @@ export default function ListsScreen({ navigation }) {
     const [ourPicks, setourPicks] = useState([]);
     const [populars, setPopulars] = useState([]);
     const [newest, setnewest] = useState([]);
-
     const [token, setToken] = useState(''); 
     const [isLoading, setIsLoading] = useState(''); 
 
@@ -82,7 +81,6 @@ export default function ListsScreen({ navigation }) {
         ).then((res) => {   
           arrayalb = res.data.listas.sort((a, b) => (a.likes.length + a.comentarios.length) > (b.likes.length + b.comentarios.length)  ? 1 : -1)
           arrayalb.slice(0, 6);
-          console.log(arrayalb);
           setPopulars(arrayalb);
         })
         .catch((error) => {
@@ -106,7 +104,41 @@ export default function ListsScreen({ navigation }) {
         .then(ret => {
         // found data go to then()
         //console.log(ret.useremail);
-            setUsutoken(ret.token);
+        setUsutoken(ret.token);
+        let url = Url + "/usuarios?id=" + ret.uid;
+        axios(url, {
+          headers: {
+            'Content-Type' : 'application/json'
+          },
+          method: 'GET'
+        })
+        .then(res => {     
+        //setUsunombre(res.data.usuarios.username);
+        //cargamos albumes 7 dias de seguidores
+        var date = new Date();
+        date.setDate(date.getDate() - 7); //actividad de los últimos 3 días
+        res.data.usuarios.seguidores.forEach( (element) => {
+          let albums = []
+          element.user_lists.forEach( (element2) => {
+              let url2 = Url + "/listal?id=" + element2;
+              console.log(url2);
+              axios(url2, {
+                headers: {
+                  'Content-Type' : 'application/json'
+                },
+                method: 'GET'
+              })
+              .then(res3 => {
+                console.log(res3.data.listas);
+                var fecha = new Date(res3.data.listas.fecha);  
+                if(fecha.getTime() > date.getTime() ){
+                setnewest((newest) => newest.concat(res3.data.listas))
+                }
+                });
+               });
+              });
+            });
+
         })
         .catch(err => {
         // any exception including data not found
@@ -167,7 +199,7 @@ export default function ListsScreen({ navigation }) {
                {usutoken ? <Text style={styles.Divtext}>New from friends</Text>:<Text style={styles.Divtext}>All time favourites</Text>}
             </LinearGradient> 
             <View>
-            { populars && usutoken ? <CustomSlider3 navigation={navigation} data={newest} />:<CustomSlider3 navigation={navigation} data={populars}/> }
+            { populars && newest && usutoken ? <CustomSlider3 navigation={navigation} data={newest} />:<CustomSlider3 navigation={navigation} data={populars}/> }
             </View>
         </ScrollView>
         </View>

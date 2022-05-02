@@ -252,7 +252,7 @@ export default function ReviewScreen({ navigation, route }) {
           }
         });
        
-     }, [load]); 
+     }, [load, id]); 
 
       function removeComment(idcom){
         if(UID){
