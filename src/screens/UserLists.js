@@ -39,6 +39,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
 
 export default function UserLists({ navigation, route }) {
     const [usu, setUsu] = useState('');  
@@ -51,6 +52,7 @@ export default function UserLists({ navigation, route }) {
     const [modalSVisible, setModalSVisible] = useState(false);
     const [modalS1Visible, setModalS1Visible] = useState(false);
     const [modalS2Visible, setModalS2Visible] = useState(false);
+    const [selectedSort, setSelectedSort] = useState('2');
     const [load, setLoad] = useState(false);
     const [search, setSearch] = useState({ value: '', error: '' })
     const [searchResults, setSearchResults] = useState([])
@@ -93,6 +95,17 @@ export default function UserLists({ navigation, route }) {
               //console.log(res.data); 
               setUsu(res.data.usuarios);
               console.log(res.data.usuarios);
+              switch(selectedSort) {
+                case '1':
+                  break;
+                case '2':
+                  setSearchResults(res.data.usuarios.user_lists)
+                  break;
+                case '3':
+                  setSearchResults(res.data.usuarios.list_liked)
+                  break;
+                default:
+              }
             })
             .catch((error) => {
               console.error(error)
@@ -115,6 +128,17 @@ export default function UserLists({ navigation, route }) {
               //console.log(res.data); 
               setUsu(res.data.usuarios);
               console.log(res.data.usuarios);
+              switch(selectedSort) {
+                case '1':
+                  break;
+                case '2':
+                  setSearchResults(res.data.usuarios.user_lists)
+                  break;
+                case '3':
+                  setSearchResults(res.data.usuarios.list_liked)
+                  break;
+                default:
+              }
             })
             .catch((error) => {
               console.error(error)
@@ -129,7 +153,7 @@ export default function UserLists({ navigation, route }) {
             break;
         }
         });
-    }, [load]); 
+    }, [load, selectedSort]); 
 
       var modalBackgroundStyle = {
         backgroundColor: 'rgba(0, 0, 0, 0.5)'
@@ -143,8 +167,22 @@ export default function UserLists({ navigation, route }) {
             {usu ? <PageHeader>{usu.username}'s lists</PageHeader>:null}
             </View>
             <View style={styles.lista}>
+            <Picker
+            selectedValue={selectedSort}
+            itemStyle={{ backgroundColor: "grey", color: "blue", fontSize:17 }}
+            mode= 'dropdown'
+            style={[
+                { width: 160
+                }
+            ]}
+            onValueChange={(itemValue, itemIndex) =>
+                setSelectedSort(itemValue)
+            }>
+            <Picker.Item label="Lists created" color="#f545e3" value="2" />
+            <Picker.Item label="Lists liked" color="#f545e3" value="3" />
+            </Picker>
             <FlatList
-            data={usu.user_lists}
+            data={searchResults}
             renderItem={({ item }) => (
                 <><View style={{ flex: 1, flexDirection: 'column', margin: 1 , alignItems: 'center', marginBottom: 5}}>
                 <TouchableOpacity onPress={() => navigation.navigate('DetailListScreen', { id: item._id })}>
@@ -281,6 +319,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         width: 185
     },
+    itemTextLista2: {
+        color: theme.colors.text,
+        paddingHorizontal: 10,
+        fontFamily:'Raleway_400Regular',
+        fontSize: 17,
+        width: 185
+    },
     itemText2: {
       color: theme.colors.text,
       paddingHorizontal: 10,
@@ -365,7 +410,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.4)',
         borderRadius: 5,
-        marginTop: 5
+        marginTop: 5,
+        marginLeft: 15
     },
     modalView: {
       margin: 20,

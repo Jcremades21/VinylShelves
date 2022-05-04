@@ -78,13 +78,20 @@ const obtenerUsuarios = async(req, res) => {
 }
 
 const crearUsuario = async(req, res) => {
-    const { email, password, rol } = req.body;
+    const { username, email, password, rol } = req.body;
     const existeEmail = await Usuario.findOne({ email: email });
+    const existeUser = await Usuario.findOne({ username: username });
 
+    if (existeUser) {
+        return res.status(400).json({
+            ok: false,
+            msg: 'Username already in use'
+        });
+    }
     if (existeEmail) {
         return res.status(400).json({
             ok: false,
-            msg: 'Email ya existe'
+            msg: 'Email already in use'
         });
     }
 

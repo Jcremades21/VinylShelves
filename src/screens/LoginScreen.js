@@ -18,6 +18,8 @@ import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
 import AppLoading from 'expo-app-loading';
+import FlashMessage from "react-native-flash-message";
+import { showMessage, hideMessage } from "react-native-flash-message";
 
 import {
   useFonts,
@@ -190,7 +192,12 @@ export default function LoginScreen({ navigation }) {
             setPassword('');
           })
           .catch((error) => {
-            console.error(error)
+            showMessage({
+              message: "Invalid email or password, pleasy try again",
+              type: "danger",
+              icon: "danger",
+              duration: 2990
+              });       
           });
 
       } catch (err) {

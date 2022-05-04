@@ -35,6 +35,7 @@ import { Entypo } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons'; 
 import moment from 'moment'
 import { Fontisto } from '@expo/vector-icons'; 
+import { Picker } from '@react-native-picker/picker';
 
 import {
     useFonts,
@@ -56,16 +57,22 @@ export default function ReviewScreen({ navigation, route }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalRVisible, setModalRVisible] = useState(false);
   const [modalDVisible, setModalDVisible] = useState(false);
+  const [modalZVisible, setModalZVisible] = useState(false);
+  const [selectedSort, setSelectedSort] = useState('');
   const [reviewTitle, setreviewTitle] = useState({ value: '', error: '' })
   const [reviewText, setreviewText] = useState({ value: '', error: '' })
+  const [reportText, setReportText] = useState({ value: '', error: '' })
   const [comment, setComment] = useState({ value: '', error: '' })
   const [success, setSuccess] = useState(false);
   const [liked, setLiked] = useState(false);
   const [load, setLoad] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [inter, setInter] = useState('');
+  const [ratinges, setRatinges] = useState('');
+  const [comentarioReporte, setComentarioReporte] = useState('');
   const [review , setReview] = useState([]);
   const [arraycoms , setArraycoms] = useState([]);
+
   const { id } = route.params;
       
   const spotify = Credentials();  
@@ -135,8 +142,10 @@ export default function ReviewScreen({ navigation, route }) {
         }).then(ret => {
           // found data go to then()
           //console.log(ret.useremail);  
+          let existe = false;
           setUsuUID(ret.uid);
           setToken(ret.token);
+            
           let array = [];
           let arraycom = [];
           let url = Url + "/reviews/?id=" + id;
@@ -146,7 +155,29 @@ export default function ReviewScreen({ navigation, route }) {
                   'x-token' : token },
                   withCredentials: true
               }
-          ).then((res) => {   
+          ).then((res) => {   //comprobamos rating
+            let url3 = Url + "/usuarios?id=" + res.data.reviews.usuario._id;
+            console.log(url3);
+            axios.get(url3,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : ret.token },
+                    withCredentials: true
+                }
+            ).then((res2) => {   
+              //console.log(res.data.listas);  
+              res2.data.usuarios.ratings.forEach( (element) => {
+                console.log(element.album);
+                if(element.album == res.data.reviews.album){
+                  existe = true;
+                  setRatinges(element.estrellas);
+                    }
+                  });
+                if(!existe){
+                    setRatinges('-');
+                  }
+                })
+
             res.data.reviews.comentarios.forEach( (element) => {
             let url = Url + "/comentarios/?id=" + element._id;
               axios.get(url,
@@ -253,6 +284,61 @@ export default function ReviewScreen({ navigation, route }) {
         });
        
      }, [load, id]); 
+
+     function addReport(){
+      try {
+        let moti = '';
+        switch(selectedSort) {
+          case '1':
+            moti = 'Sin motivo';
+            break;
+          case '2':
+            moti = 'Contains abuse';
+            break;
+          case '3':
+            moti = 'Contains plagiarism';
+            break;
+          case '4':
+            moti = 'Contains spam';
+            break;
+          case '5':
+            moti = 'Other reason';
+            break;
+          default:
+        }
+        const data = {
+          usuario : UID,
+          usuario_reportado: id,
+          motivo: moti,
+          texto: reportText.value,
+          comentario: comentarioReporte
+        }
+        console.log(data);
+        let url = Url + "/reportesc";
+        axios.post(url,
+            data,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : usutoken },
+                withCredentials: true
+            }
+        ).then((res) => {
+          setModalZVisible(false);
+          showMessage({
+            message: "Comment reported succesfully, you'll have news in a few days!",
+            type: "success",
+            icon: "success"
+          });
+          
+        })
+        .catch((error) => {
+          console.error(error)
+        });
+        
+    } catch (err) {
+        console.log(err);
+      }
+    }
 
       function removeComment(idcom){
         if(UID){
@@ -449,10 +535,6 @@ export default function ReviewScreen({ navigation, route }) {
         }
     }
 
-    function deleteComment() {
-
-    }
-
     function deleteReview() {
       let url = Url + "/reviews/" + id;
         axios.delete(url,
@@ -476,7 +558,7 @@ export default function ReviewScreen({ navigation, route }) {
      function renderComments () {
         let r = arraycoms.map((item) => (
           <View style={styles.comments}><View style={styles.comments2}>
-            <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+            <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { id: item.creador._id })}>
               <Image source={{ uri: item.creador.imagen }} style={styles.imageusu}></Image>
             </TouchableOpacity>
           <Text style={[
@@ -490,10 +572,16 @@ export default function ReviewScreen({ navigation, route }) {
            ]}>{item.texto}</Text></View><View style={styles.comments2}><View style={[
             { paddingHorizontal: 15}
              ]}>{UID == item.creador._id &&<TouchableOpacity onPress={removeComment.bind(this, item._id)}><Entypo name="trash" size={24} color="white" /></TouchableOpacity>}
-             </View><Feather name="flag" size={24} color="white" /></View></View>
+             </View>{ UID ? <TouchableOpacity onPress={clickReport.bind(this,item.uid)}><Feather name="flag" size={24} color="white" /></TouchableOpacity>:null}</View></View>
        ))     
        return r;
        }
+
+      function clickReport(c){
+        console.log(c);
+        setModalZVisible(true);
+        setComentarioReporte(c);
+      }
 
       function clickEdit(){
         setModalRVisible(true);
@@ -559,6 +647,72 @@ export default function ReviewScreen({ navigation, route }) {
 
   return (
       <View style={styles.Fondo}>
+        <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalZVisible}
+        onRequestClose={() => {
+          setModalZVisible(!modalZVisible);
+        }}
+      >
+        <View style={[styles.centeredView,modalBackgroundStyle]}>
+        <ScrollView>
+          <View style={styles.modalView}>
+            <View style={styles.reviewView}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              color: theme.colors.text,
+              fontSize: 15
+              }
+            ]}>Report comment</Text>
+            <View style={styles.Info2}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 17,
+              marginTop: 10
+              }
+            ]}>Why are you reporting this comment?</Text>
+            </View>
+            <Picker
+            selectedValue={selectedSort}
+            itemStyle={{ backgroundColor: "grey", color: "blue", fontSize:17 }}
+            mode= 'dropdown'
+            style={[
+             
+            ]}
+            onValueChange={(itemValue, itemIndex) =>
+                setSelectedSort(itemValue)
+            }>
+            <Picker.Item label="Please select a reason..." color="#f545e3" value="1" />
+            <Picker.Item label="Contains abuse" color="#f545e3" value="2" />
+            <Picker.Item label="Contains plagiarism" color="#f545e3" value="3" />
+            <Picker.Item label="Contains spam" color="#f545e3" value="4" />
+            <Picker.Item label="Other reasons" color="#f545e3" value="5" />
+            </Picker>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Message</Text>
+            <TextInput multiline={true}
+            numberOfLines={8} value={reportText.value}
+            onChangeText={(text) => setReportText({ value: text, error: '' })}></TextInput>
+            <Button
+              mode="contained"
+              onPress={addReport}
+              >
+                Send
+              </Button>
+            </View>
+          </View>
+        
+          </ScrollView>
+        </View>
+      </Modal>
                <Modal
         animationType="fade"
         transparent={true}
@@ -676,7 +830,7 @@ export default function ReviewScreen({ navigation, route }) {
       {album ? <TouchableOpacity onPress={() => navigation.navigate('ArtistScreen', {id: album.artists[0].id})}><Text style={styles.Infoartista}>{album.artists[0].name}</Text></TouchableOpacity>:null } 
       <Text style={styles.Infoart}>{fecha}</Text>
       <Paragraph style={styles.Infoval}>
-      <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text><Text style={styles.Infoval}>3/5</Text>
+      <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text>{ratinges ?<Text style={styles.Infoval}>{ratinges}/5</Text>:<Text style={styles.Infoval}>-/5</Text>}
       </Paragraph>
       <View>
       {review.usuario ? <Text style={styles.Infogenero}>{review.usuario.username}'s rating</Text>: null}
@@ -702,17 +856,19 @@ export default function ReviewScreen({ navigation, route }) {
              ]}> {inter}</Text>
         </View>
         <View style={[
-            {   flexDirection: 'row', marginTop: 5, width: '100%', justifyContent: 'space-between'}
+            {   marginTop: 5
+            }
              ]}>
+        { review ? <Text style={styles.titulo}>{review.titulo} </Text>:null}
         <View style={[
-            {   flexDirection: 'row', width: '45%'}
+            {   flexDirection: 'row'}
              ]}>
-        {review && inter ? <><Text style={styles.titulo}>{review.titulo} </Text><Text style={styles.titulo2}>by</Text></>: null}
+        {review && inter ? <><Text style={styles.titulo2}>by</Text></>: null}
         
         <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { id: review.usuario._id })}>
               <View style={styles.usuDiv}>    
               {review.usuario ?<Image source={{ uri: review.usuario.imagen }} style={styles.imageusulink}></Image>:null }
-              {review.usuario ?<Text style={styles.link}>{review.usuario.username}</Text>:null }
+              {review.usuario ?<Text numberOfLines={1} style={styles.link}>{review.usuario.username}</Text>:null }
               </View>     
        </TouchableOpacity>
        </View>
@@ -731,7 +887,7 @@ export default function ReviewScreen({ navigation, route }) {
           {review.usuario ?<View style={styles.edit}>
           {UID == review.usuario._id && <TouchableOpacity onPress={() => clickEdit()}><FontAwesome name="pencil-square-o" size={24} color="white" /></TouchableOpacity>}
           </View>:null}
-       <TouchableOpacity onPress={() => navigation.navigate('UserReviews', { id: UID })} style={[
+       <TouchableOpacity onPress={() => navigation.navigate('UserReviews', { id: review.usuario._id })} style={[
        { flexDirection: 'row', marginRight: 10}
         ]}><Entypo name="book" size={24} color="white" />{review.usuario ? <Text style={[
             {   color: theme.colors.text,
@@ -776,9 +932,9 @@ const styles = StyleSheet.create({
       fontFamily:'Raleway_700Bold',
     },
     Info2:{
-      alignItems: 'center',
-      width:'95%',
-      paddingVertical: 10
+      width:'100%',
+      paddingVertical: 0,
+      marginTop: 10
     },
     edit: {
       alignSelf: 'center',
@@ -895,7 +1051,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginBottom: 15,
         color: theme.colors.text,
-        fontFamily:'Raleway_400Regular' 
+        fontFamily:'Raleway_400Regular',
+        textAlign: 'center'
       },
     Fondo:{
         backgroundColor: '#392F36',
@@ -921,7 +1078,8 @@ const styles = StyleSheet.create({
         fontFamily: 'Raleway_700Bold',
         color: theme.colors.secondary,
         marginTop: 5,
-        fontSize: 15
+        fontSize: 15,
+        width: 200
     },
     link2:{
       fontFamily: 'Raleway_700Bold',

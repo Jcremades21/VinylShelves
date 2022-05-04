@@ -40,6 +40,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
 
 export default function UserScreen({ navigation, route }) {
     const [usu, setUsu] = useState('');  
@@ -52,11 +53,14 @@ export default function UserScreen({ navigation, route }) {
     const [fav2, setFav2] = useState('');
     const [sigue, setSigue] = useState(false);
     const [followed, setFollowed] = useState('');   
+    const [modalRVisible, setModalRVisible] = useState(false);
+    const [selectedSort, setSelectedSort] = useState('');
     const [modalSVisible, setModalSVisible] = useState(false);
     const [modalS1Visible, setModalS1Visible] = useState(false);
     const [modalS2Visible, setModalS2Visible] = useState(false);
     const [load, setLoad] = useState(false);
     const [search, setSearch] = useState({ value: '', error: '' })
+    const [reportText, setReportText] = useState({ value: '', error: '' })
     const [searchResults, setSearchResults] = useState([])
     const [image, setImage] = useState('')
     const spotify = Credentials();  
@@ -305,6 +309,59 @@ export default function UserScreen({ navigation, route }) {
          });
     }
 
+    function addReport(){
+      try {
+        let moti = '';
+        switch(selectedSort) {
+          case '1':
+            moti = 'Sin motivo';
+            break;
+          case '2':
+            moti = 'Offensive username';
+            break;
+          case '3':
+            moti = 'Spam';
+            break;
+          case '4':
+            moti = 'Account promotes piracy';
+            break;
+          case '5':
+            moti = 'Racist, sexist, homophobic or other discriminatory views';
+            break;
+          default:
+        }
+        const data = {
+          usuario : UID,
+          usuario_reportado: id,
+          motivo: moti,
+          texto: reportText.value
+        }
+        let url = Url + "/reportesu";
+        axios.post(url,
+            data,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : usutoken },
+                withCredentials: true
+            }
+        ).then((res) => {
+          setModalRVisible(false);
+          showMessage({
+            message: "User reported succesfully, you'll have news in a few days!",
+            type: "success",
+            icon: "success"
+          });
+          
+        })
+        .catch((error) => {
+          console.error(error)
+        });
+        
+    } catch (err) {
+        console.log(err);
+      }
+    }
+
     function addFollow(){
         let url = Url + "/usuarios?id=" + id;
         axios.get(url,
@@ -372,16 +429,92 @@ export default function UserScreen({ navigation, route }) {
        
          });
     }
+    function clickReport(){
+      setModalRVisible(true);
+    }
+
       var modalBackgroundStyle = {
         backgroundColor: 'rgba(0, 0, 0, 0.5)'
       };
     
     return (
         <View style={styles.Fondo}>
+          <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalRVisible}
+        onRequestClose={() => {
+          setModalRVisible(!modalRVisible);
+        }}
+      >
+        <View style={[styles.centeredView,modalBackgroundStyle]}>
+        <ScrollView>
+          <View style={styles.modalView}>
+            <View style={styles.reviewView}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              color: theme.colors.text,
+              fontSize: 15
+              }
+            ]}>Report user</Text>
+            <View style={styles.Info2}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 17,
+              marginTop: 10
+              }
+            ]}>Why are you reporting this member?</Text>
+            </View>
+            <Picker
+            selectedValue={selectedSort}
+            itemStyle={{ backgroundColor: "grey", color: "blue", fontSize:17 }}
+            mode= 'dropdown'
+            style={[
+             
+            ]}
+            onValueChange={(itemValue, itemIndex) =>
+                setSelectedSort(itemValue)
+            }>
+            <Picker.Item label="Please select a reason..." color="#f545e3" value="1" />
+            <Picker.Item label="Offensive username" color="#f545e3" value="2" />
+            <Picker.Item label="Spam" color="#f545e3" value="3" />
+            <Picker.Item label="Account promotes piracy" color="#f545e3" value="4" />
+            <Picker.Item label="Racist, sexist, homophobic or other discriminatory views" color="#f545e3" value="5" />
+            </Picker>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Message</Text>
+            <TextInput multiline={true}
+            numberOfLines={8} value={reportText.value}
+            onChangeText={(text) => setReportText({ value: text, error: '' })}></TextInput>
+            <Button
+              mode="contained"
+              onPress={addReport}
+              >
+                Send
+              </Button>
+            </View>
+          </View>
+        
+          </ScrollView>
+        </View>
+      </Modal>
             <ScrollView>
             <View style={styles.encabezado}>
             <BackButton goBack={navigation.goBack} />
             <PageHeader>Profile</PageHeader>
+            {UID ? <TouchableOpacity onPress={clickReport} style={[
+              {   position: 'absolute',
+              right: 1,
+              marginRight: 20
+              }
+            ]}><Feather name="flag" size={24} color="white" /></TouchableOpacity>:null}
             </View>
             <View style={[
               {  alignItems: 'center'

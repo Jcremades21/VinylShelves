@@ -297,6 +297,7 @@ export default function AlbumScreen({ navigation, route }) {
 
      React.useEffect(() => {
        try {
+        if(ratinges != 0){
         const data = {
           estrellas: ratinges,
           album: album.id,
@@ -318,6 +319,11 @@ export default function AlbumScreen({ navigation, route }) {
         ).then((res) => {
           console.log(res.data);
           setLoad(!load);
+          showMessage({
+            message: "Rating edited succesfully!",
+            type: "success",
+            icon: "success"
+          });
             console.log('actualiza');
           });
         }
@@ -361,6 +367,11 @@ export default function AlbumScreen({ navigation, route }) {
               }
           ).then((res3) => {
             setLoad(!load);
+            showMessage({
+              message: "Rating added to your collection!",
+              type: "success",
+              icon: "success"
+            });
           })
           .catch((error) => {
             console.error(error)
@@ -371,7 +382,7 @@ export default function AlbumScreen({ navigation, route }) {
         .catch((error) => {
           console.error(error)
         });
-        }
+        }}
         } catch (err) {
           console.log(err);
         }
@@ -432,7 +443,7 @@ export default function AlbumScreen({ navigation, route }) {
                 texto: element.texto,
                 likes: element.likes.length,
                 comments: '0',
-                val: ratinges,
+                val: '5',
               }
               array.push(data);
               console.log(albumResponse.body.images[0].url);

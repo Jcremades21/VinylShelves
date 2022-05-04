@@ -29,6 +29,8 @@ app.use('/api/comentarios', require('./routes/comentario'));
 app.use('/api/listal', require('./routes/listal'));
 app.use('/api/listar', require('./routes/listar'));
 app.use('/api/ratings', require('./routes/rating'));
+app.use('/api/reportesc', require('./routes/reporte_comentario'));
+app.use('/api/reportesu', require('./routes/reporte_usuario'));
 app.use('/api/upload', require('./routes/uploads'));
 
 // Abrir la aplicacíon en el puerto 3000

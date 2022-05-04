@@ -8,6 +8,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import storage from './src/screens';
 import AppLoading from 'expo-app-loading';
 import { showMessage, hideMessage } from "react-native-flash-message";
+import { StatusBar } from 'react-native';
 import FlashMessage from "react-native-flash-message";
 
 import {
@@ -162,6 +163,7 @@ const HomeTabs = () => (
 
 export default function App() {
   const [isLoading, setIsLoading] = React.useState(true);
+  const [hidden, setHidden] = React.useState(true);
   const [userToken, setUserToken] = React.useState(null);
 
   React.useEffect(() => {

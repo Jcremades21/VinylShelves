@@ -101,7 +101,8 @@ export default function ProfileScreen({ navigation, route }) {
             spotifyApi.setAccessToken(tokenResponse.data.access_token); 
             spotifyApi.getAlbums([res.data.usuarios.favs]).then(
             function(albumResponse) {
-                console.log(albumResponse);
+                console.log(albumResponse.body);
+                console.log(res.data.usuarios.favs);
                 const favo1 = {
                     id: albumResponse.body.albums[0].id,
                     title: albumResponse.body.albums[0].name,

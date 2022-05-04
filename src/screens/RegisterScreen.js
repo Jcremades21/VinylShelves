@@ -12,6 +12,7 @@ import { theme } from '../core/theme'
 import { emailValidator } from '../helpers/emailValidator'
 import { passwordValidator } from '../helpers/passwordValidator'
 import { nameValidator } from '../helpers/nameValidator'
+import { showMessage, hideMessage } from "react-native-flash-message";
 
 export default function RegisterScreen({ navigation }) {
   const [username, setName] = useState({ value: '', error: '' })
@@ -64,7 +65,12 @@ export default function RegisterScreen({ navigation }) {
           setModalVisible(true);
         })
         .catch((error) => {
-          console.error(error)
+          showMessage({
+            message: error.response.data.msg,
+            type: "danger",
+            icon: "danger",
+            duration: 2990
+            });  
         });
         
     } catch (err) {

@@ -52,6 +52,7 @@ export default function AlbumScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [token, setToken] = useState(''); 
   const [usutoken, setusuToken] = useState('');   
+  const [usu, setUsu] = useState('');   
   const [list, setList] = useState(''); 
   const [listofalb, setListofalb] = useState('');
   const [fecha, setFecha] = useState('');   
@@ -111,6 +112,21 @@ export default function AlbumScreen({ navigation, route }) {
           // found data go to then()
           //console.log(ret.useremail);  
           setUsuUID(ret.uid);
+          setusuToken(ret.token);
+          let urlu = Url + "/usuarios?id=" + ret.uid;
+            axios.get(urlu,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : usutoken },
+                    withCredentials: true
+                }
+            ).then((res) => {   
+              //console.log(res.data.listas);  
+              setUsu(res.data.usuarios);
+            })
+            .catch((error) => {
+              console.error(error)
+                });
           let array = [];//cargamos lista
           let arraycom = [];
           let url = Url + "/listal?id=" + id;
@@ -268,12 +284,42 @@ export default function AlbumScreen({ navigation, route }) {
            withCredentials: true
        }
        ).then((res) => { 
-         setLiked(true);
-         showMessage({
-           message: "List saved to your likes!",
-           type: "success",
-           icon: "success"
-         });
+        let url = Url + "/usuarios/" + UID;
+        let favos = usu.list_liked;
+        favos.push(id);
+        const usuario = {
+          activo: usu.activo,
+          baneado: usu.baneado,
+          email: usu.email,
+          favs: favos,
+          imagen: usu.imagen,
+          list_liked: favos,
+          notis: usu.notis,
+          notis_act : usu.notis_act,
+          ratings: usu.ratings,
+          reviews: usu.reviews,
+          rol: usu.rol,
+          seguidores: usu.seguidores,
+          seguidos: usu.seguidos,
+          uid: usu.uid,
+          user_lists: usu.user_lists,
+          username: usu.username
+         }
+        axios.put(url,
+          usuario,
+         {
+             headers: { 'Content-Type': 'application/json',
+             'x-token' : usutoken },
+             withCredentials: true
+         }
+         ).then((res) => { 
+          setLiked(true);
+          showMessage({
+            message: "List saved to your collection!",
+            type: "success",
+            icon: "success"
+          });
+         })
        });
      }
 
@@ -304,12 +350,56 @@ export default function AlbumScreen({ navigation, route }) {
            withCredentials: true
        }
        ).then((res3) => { 
+        let url = Url + "/usuarios/" + UID;
+        let favos = usu.list_liked;
+        let del = false;
+        console.log(url);
+        favos.forEach( (element, index) => { //lo borramos del usuario
+          console.log(element);
+          if(element._id == id){
+            favos.splice(index,1);
+            console.log('deleted');
+            del = false;
+          }
+          if(del == false){
+            if(element == id){
+              favos.splice(index,1);
+              console.log('deleted');
+            }
+          }
+         });
+        const usuario = {
+          activo: usu.activo,
+          baneado: usu.baneado,
+          email: usu.email,
+          favs: favos,
+          imagen: usu.imagen,
+          list_liked: favos,
+          notis: usu.notis,
+          notis_act : usu.notis_act,
+          ratings: usu.ratings,
+          reviews: usu.reviews,
+          rol: usu.rol,
+          seguidores: usu.seguidores,
+          seguidos: usu.seguidos,
+          uid: usu.uid,
+          user_lists: usu.user_lists,
+          username: usu.username
+         }
+        axios.put(url,
+          usuario,
+         {
+             headers: { 'Content-Type': 'application/json',
+             'x-token' : usutoken },
+             withCredentials: true
+         }
+         ).then((res) => { 
          setLiked(false);
          showMessage({
            message: "Unliked!",
            type: "default",
            icon: "success"
-         });
+         });})
        });
      }
 
