@@ -415,6 +415,34 @@ export default function AlbumScreen({ navigation, route }) {
           ).then((res) => {
             console.log(res.data.listas.array);
             let array = res.data.listas.array;
+             //buscamos los rating de cada album y los ordenamos según su media
+            let url2 = Url + "/ratings?pag=0";
+             axios.get(url2,
+               {
+                   headers: { 'Content-Type': 'application/json',
+                   'x-token' : usutoken },
+                   withCredentials: true
+               }
+               ).then((res) => {
+                 array.forEach( (element, index) => {
+                   let suma = 0;
+                   let total = 0;
+                   let media = 0;
+                   res.data.ratings.forEach( (element2) => {
+                   if(element.id == element2.album){
+                   suma = suma + element2.estrellas;
+                   total++;
+                   }
+                   })
+                   if(suma!=0){
+                     media = (suma/total).toFixed(1);
+                     }
+                     else{
+                       media = '0';
+                     }
+                   array[index].popularity = media;
+                   console.log(array[index].popularity);
+                 })
             switch(selectedSort) {
               case '1':
                 break;
@@ -425,6 +453,7 @@ export default function AlbumScreen({ navigation, route }) {
                 array.sort((a, b) => a.release_date > b.release_date ? 1 : -1)
                 break;
               case '4':
+                array.sort((a, b) => a.popularity < b.popularity ? 1 : -1)
                 break;
               default:
             }
@@ -433,6 +462,7 @@ export default function AlbumScreen({ navigation, route }) {
           .catch((error) => {
             console.error(error)
           });     
+        });
 
     }, [selectedSort]); 
 

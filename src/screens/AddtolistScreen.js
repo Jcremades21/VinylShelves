@@ -9,6 +9,7 @@ import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
 import CustomSlider from '../components/Carrousel'
 import Button from '../components/Button'
+import Loading from '../components/Loading';
 import storage from '.'
 import { theme } from '../core/theme'
 import axios from 'axios';
@@ -248,7 +249,7 @@ export default function AddtolistScreen({ navigation, route }) {
         setIsLoading(false);
       }, 100);
       if(isLoading) {
-          return null;
+        return <Loading />;
       }
 
     return (

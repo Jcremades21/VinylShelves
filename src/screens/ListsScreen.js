@@ -8,6 +8,7 @@ import Header from '../components/Header'
 import PageHeader from '../components/PageHeader'
 import Paragraph from '../components/Paragraph'
 import CustomSlider from '../components/Carrousel'
+import Loading from '../components/Loading';
 import Button from '../components/Button'
 import storage from '.'
 import { theme } from '../core/theme'
@@ -159,7 +160,7 @@ export default function ListsScreen({ navigation }) {
         setIsLoading(false);
       }, 300);
     if(isLoading) {
-        return null;
+      return <Loading />;
     }
     return (
         <View style={styles.Fondo}>

@@ -304,7 +304,8 @@ export default function AlbumScreen({ navigation, route }) {
           albumimg: album.images[0].url,
           albumtit: album.name,
           albumart: album.artists[0].name,
-          usuario: UID
+          usuario: UID,
+          artistaid: album.artists[0].id
         }
         let ratarray = usu.ratings;
         if(exrating){ //si existe hacemos PUT

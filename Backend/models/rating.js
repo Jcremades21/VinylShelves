@@ -11,6 +11,9 @@ const RatingSchema = Schema({
         type: String,
         required: true
     },
+    artistaid: {
+        type: String,
+    },
     albumid: {
         type: String
     },

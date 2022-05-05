@@ -62,6 +62,10 @@ export default function ArtistScreen({ navigation, route }) {
   const [reviewText, setreviewText] = useState({ value: '', error: '' })
   const [success, setSuccess] = useState(false);
   const [errMsg, setErrMsg] = useState('');
+  const [ratinges, setRatinges] = useState('');
+  const [media, setMedia] = React.useState(0);
+  const [total, setTotal] = React.useState(0);
+
   const { id, refresh } = route.params;
     
   const spotify = Credentials();  
@@ -144,7 +148,37 @@ export default function ArtistScreen({ navigation, route }) {
     function clickReview(){
       setModalRVisible(true);
     }
-    
+
+    React.useEffect(() => { //valoracion media
+      let url = Url + "/ratings?pag=0";
+      let suma = 0;
+      let total = 0;
+
+      axios.get(url,
+        {
+            headers: { 'Content-Type': 'application/json',
+            'x-token' : usutoken },
+            withCredentials: true
+        }
+    ).then((res) => {
+      res.data.ratings.forEach( (element) => {
+        if(element.artistaid == id){
+         suma = suma + element.estrellas;
+         total++;
+        }
+      })
+      console.log(suma);
+      console.log(total);
+      setTotal(total)
+      if(suma!=0){
+      setMedia((suma/total).toFixed(1));
+      }
+      else{
+        setMedia('0');
+      }
+    });
+    }, []); 
+
     React.useEffect(() => {
 
         storage
@@ -332,12 +366,12 @@ export default function ArtistScreen({ navigation, route }) {
       <View style={styles.Info}>
       <Text style={styles.Infoname}>{artist.name}</Text>
       <Paragraph style={styles.Infoval}>
-      <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text><Text style={styles.Infoval}>4.5/5</Text>
+      <FontAwesome name="star" size={24} color="#FFCF26" /><Text style={styles.Infoval}> </Text><Text style={styles.Infoval}>{media}/5</Text>
       </Paragraph>
         
         <Text style={styles.Infogenero}>Average rating</Text>
         <Text style={styles.Infostat}>Total ratings</Text>
-        <Text style={styles.Infostat1}>0</Text>
+        <Text style={styles.Infostat1}>{total}</Text>
         <Text style={styles.Infostat}>Total works</Text>
         {albums ? <Text style={styles.Infostat1}>{albums.length}</Text>:null}
         

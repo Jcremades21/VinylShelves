@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { theme } from './src/core/theme'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import storage from './src/screens';
+import Loading from './src/components/Loading';
 import AppLoading from 'expo-app-loading';
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { StatusBar } from 'react-native';
@@ -173,7 +174,7 @@ export default function App() {
     }, []);
 
   if (isLoading) {
-    return <AppLoading />;
+    return <Loading />;
   }
 
   return (

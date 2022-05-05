@@ -452,7 +452,7 @@ export default function UserScreen({ navigation, route }) {
           <View style={styles.modalView}>
             <View style={styles.reviewView}>
             <Text style={[
-              { fontFamily:'Raleway_400Regular',
+              { fontFamily:'Raleway_700Bold',
               color: theme.colors.text,
               fontSize: 15
               }

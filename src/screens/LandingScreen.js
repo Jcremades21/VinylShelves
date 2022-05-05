@@ -16,6 +16,7 @@ import axios from 'axios';
 import { Url, usuemail } from '../global'
 import AppLoading from 'expo-app-loading';
 import {decode as atob, encode as btoa} from 'base-64';
+import Loading from '../components/Loading';
 import SpotifyWebApi from "spotify-web-api-node";
 
 
@@ -211,7 +212,7 @@ export default function Landing({ navigation }) {
     }, 2000);
   }, []);
    if (isLoading && !fontsLoaded) {
-    return <AppLoading />;
+    return <Loading />;
   }
   return (
     <ScrollView>

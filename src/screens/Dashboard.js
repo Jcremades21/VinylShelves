@@ -291,6 +291,17 @@ export default function Dashboard({ route, navigation }) {
       <View>
       {friends ? <CustomSlider navigation={navigation} data={friends} />:null}
       </View>
+      {friends.length == 0 && <View>
+        <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 14,
+              alignSelf: 'center',
+              textAlign: 'center'
+              }
+        ]}>Seems like your friends have been a little inactive lately...</Text>
+      </View> }
       <LinearGradient
       // Button Linear Gradient
       colors={['#5F1880', '#713b8c', '#392F36']}
