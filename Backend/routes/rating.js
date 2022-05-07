@@ -13,6 +13,7 @@ const router = Router();
 
 router.get('/', obtenerRatings);
 router.post('/', [
+    validarJWT,
     check('estrellas', 'El argumento estrellas es obligatorio').not().isEmpty(),
     check('album', 'El argumento album es obligatorio').not().isEmpty(),
     check('usuario', 'El argumento usuario es obligatorio').not().isEmpty(),
@@ -20,6 +21,7 @@ router.post('/', [
     validarRol
 ], crearRatings);
 router.put('/:id', [
+    validarJWT,
     check('estrellas', 'El argumento estrellas es obligatorio').not().isEmpty(),
     check('album', 'El argumento album es obligatorio').not().isEmpty(),
     check('usuario', 'El argumento usuario es obligatorio').not().isEmpty(),

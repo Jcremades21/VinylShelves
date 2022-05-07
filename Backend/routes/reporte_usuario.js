@@ -13,12 +13,14 @@ const router = Router();
 
 router.get('/', obtenerReporteU);
 router.post('/', [
+    validarJWT,
     check('usuario', 'El argumento usuario es obligatorio').not().isEmpty(),
     check('usuario_reportado', 'El argumento usuario reportado').not().isEmpty(),
     validarCampos,
     validarRol
 ], crearReportesU);
 router.put('/:id', [
+    validarJWT,
     check('usuario', 'El argumento usuario es obligatorio').not().isEmpty(),
     check('usuario_reportado', 'El argumento usuario reportado').not().isEmpty(),
     // campos que son opcionales que vengan pero que si vienen queremos validar el tipo

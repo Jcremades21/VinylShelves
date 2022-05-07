@@ -13,6 +13,7 @@ const router = Router();
 
 router.get('/', obtenerReporteC);
 router.post('/', [
+    validarJWT,
     check('usuario', 'El argumento usuario es obligatorio').not().isEmpty(),
     check('usuario_reportado', 'El argumento usuario reportado').not().isEmpty(),
     check('comentario', 'El argumento comentario es obligatorio').not().isEmpty(),
@@ -20,6 +21,7 @@ router.post('/', [
     validarRol
 ], crearReportesC);
 router.put('/:id', [
+    validarJWT,
     check('usuario', 'El argumento usuario es obligatorio').not().isEmpty(),
     check('usuario_reportado', 'El argumento usuario reportado').not().isEmpty(),
     check('comentario', 'El argumento comentario es obligatorio').not().isEmpty(),

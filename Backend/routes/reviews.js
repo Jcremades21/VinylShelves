@@ -13,12 +13,14 @@ const router = Router();
 
 router.get('/', obtenerReviews);
 router.post('/', [
+    validarJWT,
     check('titulo', 'El argumento titulo es obligatorio').not().isEmpty(),
     check('texto', 'El argumento texto es obligatorio').not().isEmpty(),
     validarCampos,
     validarRol
 ], crearReview);
 router.put('/:id', [
+    validarJWT,
     check('titulo', 'El argumento titulo es obligatorio').not().isEmpty(),
     check('texto', 'El argumento texto es obligatorio').not().isEmpty(),
     check('id', 'El identificador no es válido').isMongoId(),

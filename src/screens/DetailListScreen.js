@@ -60,12 +60,14 @@ export default function AlbumScreen({ navigation, route }) {
   const [UID, setUsuUID] = useState('');  
   const [modalDVisible, setModalDVisible] = useState(false);
   const [modalCVisible, setModalCVisible] = useState(false);
+  const [modalZVisible, setModalZVisible] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const { id } = route.params;
   const [arraycoms , setArraycoms] = useState([]);
   const [load, setLoad] = useState(false);
   const [selectedSort, setSelectedSort] = useState();
+  const [motivo, setMotivo] = useState();
   const [comment, setComment] = useState({ value: '', error: '' })
   const [inter, setInter] = useState('');
   const [listTitle, setlistTitle] = useState({ value: '', error: '' })
@@ -74,6 +76,8 @@ export default function AlbumScreen({ navigation, route }) {
   const [searchResults, setSearchResults] = useState([])
   const [listContent, setListContent] = useState([])
   const [arrayContent, setArrayContent] = useState([])
+  const [comentarioReporte, setComentarioReporte] = useState('');
+  const [reportText, setReportText] = useState({ value: '', error: '' })
 
   const spotify = Credentials();  
   //insfav();
@@ -146,7 +150,7 @@ export default function AlbumScreen({ navigation, route }) {
                   axios.get(url,
                       {
                           headers: { 'Content-Type': 'application/json',
-                          'x-token' : token },
+                          'x-token' : usutoken },
                           withCredentials: true
                       }
                     ).then((res) => {
@@ -179,7 +183,7 @@ export default function AlbumScreen({ navigation, route }) {
           axios.get(url,
               {
                   headers: { 'Content-Type': 'application/json',
-                  'x-token' : token },
+                  'x-token' : usutoken },
                   withCredentials: true
               }
           ).then((res) => {
@@ -191,7 +195,7 @@ export default function AlbumScreen({ navigation, route }) {
                   axios.get(url,
                       {
                           headers: { 'Content-Type': 'application/json',
-                          'x-token' : token },
+                          'x-token' : usutoken },
                           withCredentials: true
                       }
                     ).then((res) => {
@@ -240,7 +244,7 @@ export default function AlbumScreen({ navigation, route }) {
                     headers: { 'Authorization' : 'Bearer ' + tokenResponse.data.access_token}
                   })
                   .then (albumResponse => { 
-                      if (cancel) return       
+                      if (cancel) return  
                   setSearchResults(albumResponse.data.tracks.items.map(track => {
                     let fechasplit = track.album.release_date;
                     return{
@@ -250,17 +254,72 @@ export default function AlbumScreen({ navigation, route }) {
                         imagen: track.album.images[0].url ,
                         release_date: fechasplit,
                         release_date_precision: track.album.release_date_precision,
-                        idart: album.artists[0].id
+                        idart: track.album.artists[0].id
                     }
                     
                     }))
                   });
-            });}
+            });}  
         getData();
 
         return () => cancel = true;
      }, [search]); 
-    
+
+     function addReport(){
+      try {
+        let moti = '';
+        switch(motivo) {
+          case '1':
+            moti = 'Sin motivo';
+            break;
+          case '2':
+            moti = 'Contains abuse';
+            break;
+          case '3':
+            moti = 'Contains plagiarism';
+            break;
+          case '4':
+            moti = 'Contains spam';
+            break;
+          case '5':
+            moti = 'Other reason';
+            break;
+          default:
+        }
+        const data = {
+          usuario : UID,
+          usuario_reportado: id,
+          motivo: moti,
+          texto: reportText.value,
+          comentario: comentarioReporte
+        }
+        console.log(data);
+        let url = Url + "/reportesc";
+        axios.post(url,
+            data,
+            {
+                headers: { 'Content-Type': 'application/json',
+                'x-token' : usutoken },
+                withCredentials: true
+            }
+        ).then((res) => {
+          setModalZVisible(false);
+          showMessage({
+            message: "Comment reported succesfully, you'll have news in a few days!",
+            type: "success",
+            icon: "success"
+          });
+          
+        })
+        .catch((error) => {
+          console.error(error)
+        });
+        
+    } catch (err) {
+        console.log(err);
+      }
+    }
+
      function addLike(){
       let url = Url + "/listal/" + id;
       let like = list.likes;
@@ -280,7 +339,7 @@ export default function AlbumScreen({ navigation, route }) {
        lista,
        {
            headers: { 'Content-Type': 'application/json',
-           'x-token' : token },
+           'x-token' : usutoken },
            withCredentials: true
        }
        ).then((res) => { 
@@ -322,7 +381,7 @@ export default function AlbumScreen({ navigation, route }) {
          })
        });
      }
-
+    
      function quitLike(){
       let url = Url + "/listal/" + id;
       let like = list.likes;
@@ -346,7 +405,7 @@ export default function AlbumScreen({ navigation, route }) {
        lista,
        {
            headers: { 'Content-Type': 'application/json',
-           'x-token' : token },
+           'x-token' : usutoken },
            withCredentials: true
        }
        ).then((res3) => { 
@@ -466,12 +525,18 @@ export default function AlbumScreen({ navigation, route }) {
 
     }, [selectedSort]); 
 
+    function clickReport(c){
+      console.log(c);
+      setModalZVisible(true);
+      setComentarioReporte(c);
+    }
+
     function deleteList() {
       let url = Url + "/listal/" + id;
         axios.delete(url,
             {
                 headers: { 'Content-Type': 'application/json',
-                'x-token' : token },
+                'x-token' : usutoken },
                 withCredentials: true
             }
         ).then((res) => {
@@ -511,7 +576,7 @@ export default function AlbumScreen({ navigation, route }) {
         lista,
         {
             headers: { 'Content-Type': 'application/json',
-            'x-token' : token },
+            'x-token' : usutoken },
             withCredentials: true
         }
         ).then((res3) => { 
@@ -519,7 +584,7 @@ export default function AlbumScreen({ navigation, route }) {
           axios.delete(url2,
               {
                   headers: { 'Content-Type': 'application/json',
-                  'x-token' : token },
+                  'x-token' : usutoken },
                   withCredentials: true
               }
           ).then((res4) => {
@@ -544,7 +609,7 @@ export default function AlbumScreen({ navigation, route }) {
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',
-                    'x-token' : token },
+                    'x-token' : usutoken },
                     withCredentials: true
                 }
                ).then((res) => {
@@ -563,7 +628,7 @@ export default function AlbumScreen({ navigation, route }) {
                     data,
                     {
                         headers: { 'Content-Type': 'application/json',
-                        'x-token' : token },
+                        'x-token' : usutoken },
                         withCredentials: true
                     }
                 ).then((res2) => {   
@@ -584,7 +649,7 @@ export default function AlbumScreen({ navigation, route }) {
                       lista1,
                       {
                           headers: { 'Content-Type': 'application/json',
-                          'x-token' : token },
+                          'x-token' : usutoken },
                           withCredentials: true
                       }
                       ).then((res3) => { 
@@ -630,7 +695,7 @@ export default function AlbumScreen({ navigation, route }) {
               data,
               {
                   headers: { 'Content-Type': 'application/json',
-                  'x-token' : token },
+                  'x-token' : usutoken },
                   withCredentials: true
               }
           ).then((res) => {
@@ -711,7 +776,7 @@ export default function AlbumScreen({ navigation, route }) {
          axios.get(url2,
              {
                  headers: { 'Content-Type': 'application/json',
-                 'x-token' : token },
+                 'x-token' : usutoken },
                  withCredentials: true
              }
          ).then((res) => {
@@ -741,7 +806,7 @@ export default function AlbumScreen({ navigation, route }) {
                 data,
                 {
                     headers: { 'Content-Type': 'application/json',
-                    'x-token' : token },
+                    'x-token' : usutoken },
                     withCredentials: true
                 }
             ).then((res) => {
@@ -775,7 +840,7 @@ export default function AlbumScreen({ navigation, route }) {
          axios.get(url2,
              {
                  headers: { 'Content-Type': 'application/json',
-                 'x-token' : token },
+                 'x-token' : usutoken },
                  withCredentials: true
              }
          ).then((res) => {
@@ -809,7 +874,7 @@ export default function AlbumScreen({ navigation, route }) {
                 data,
                 {
                     headers: { 'Content-Type': 'application/json',
-                    'x-token' : token },
+                    'x-token' : usutoken },
                     withCredentials: true
                 }
             ).then((res) => {
@@ -841,6 +906,72 @@ export default function AlbumScreen({ navigation, route }) {
 
   return (
       <View style={styles.Fondo}>
+        <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalZVisible}
+        onRequestClose={() => {
+          setModalZVisible(!modalZVisible);
+        }}
+      >
+        <View style={[styles.centeredView,modalBackgroundStyle]}>
+        <ScrollView>
+          <View style={styles.modalView}>
+            <View style={styles.reviewView}>
+            <Text style={[
+              { fontFamily:'Raleway_700Bold',
+              color: theme.colors.text,
+              fontSize: 15
+              }
+            ]}>Report comment</Text>
+            <View style={styles.Info2}>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 17,
+              marginTop: 10
+              }
+            ]}>Why are you reporting this comment?</Text>
+            </View>
+            <Picker
+            selectedValue={motivo}
+            itemStyle={{ backgroundColor: "grey", color: "blue", fontSize:17 }}
+            mode= 'dropdown'
+            style={[
+             
+            ]}
+            onValueChange={(itemValue, itemIndex) =>
+                setMotivo(itemValue)
+            }>
+            <Picker.Item label="Please select a reason..." color="#f545e3" value="1" />
+            <Picker.Item label="Contains abuse" color="#f545e3" value="2" />
+            <Picker.Item label="Contains plagiarism" color="#f545e3" value="3" />
+            <Picker.Item label="Contains spam" color="#f545e3" value="4" />
+            <Picker.Item label="Other reasons" color="#f545e3" value="5" />
+            </Picker>
+            <Text style={[
+              { fontFamily:'Raleway_400Regular',
+              paddingVertical: 4,
+              color: theme.colors.text,
+              fontSize: 18
+              }
+            ]}>Message</Text>
+            <TextInput multiline={true} style={styles.input}
+            numberOfLines={8} value={reportText.value}
+            onChangeText={(text) => setReportText({ value: text, error: '' })}></TextInput>
+            <Button
+              mode="contained"
+              onPress={addReport}
+              >
+                Send
+              </Button>
+            </View>
+          </View>
+        
+          </ScrollView>
+        </View>
+      </Modal>
         <Modal
         animationType="fade"
         transparent={true}
@@ -1174,7 +1305,7 @@ export default function AlbumScreen({ navigation, route }) {
                     ]}>{item.texto}</Text></View><View style={styles.comments2}><View style={[
                         { paddingHorizontal: 15}
                         ]}>{UID == item.creador._id &&<TouchableOpacity onPress={removeComment.bind(this, item.uid)}><Entypo name="trash" size={24} color="white" /></TouchableOpacity>}
-                        </View><Feather name="flag" size={24} color="white" /></View></View>
+                        </View>{ UID ? <TouchableOpacity onPress={clickReport.bind(this,item.uid)}><Feather name="flag" size={24} color="white" /></TouchableOpacity>:null}</View></View>
                 )}
                 numColumns={1}
                 keyExtractor={(item, index) => index}
@@ -1502,6 +1633,7 @@ const styles = StyleSheet.create({
       color: 'black',
       paddingHorizontal: 10,
       fontFamily:'Raleway_700Bold',
+      width: 150
     },
     itemText2: {
       color: 'black',
@@ -1517,5 +1649,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         alignContent: 'center',
     },
+    input:{
+      backgroundColor: 'rgba(248, 34, 34, 0.25)',
+      color: theme.colors.text,
+      fontSize: 15,
+      borderWidth: 1,
+      borderColor: 'rgba(217, 15, 200, 0.55)',
+      borderRadius: 10,
+      padding: 6,
+      marginTop: 6,
+      marginBottom: 16,
+      fontFamily:'Raleway_400Regular'
+    }
       
 })

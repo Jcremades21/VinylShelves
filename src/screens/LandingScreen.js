@@ -232,7 +232,7 @@ export default function Landing({ navigation }) {
         <Text style={styles.Divtext}>Our favourite albums</Text>
       </LinearGradient>
       <View>
-        <CustomSlider navigation={navigation} data={ourfavs} />
+        {ourfavs ?<CustomSlider navigation={navigation} data={ourfavs} />:null}
       </View>
       <LinearGradient
       // Button Linear Gradient

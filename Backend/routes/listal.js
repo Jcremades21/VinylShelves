@@ -13,11 +13,13 @@ const router = Router();
 
 router.get('/', obtenerListas);
 router.post('/', [
+    validarJWT,
     check('titulo', 'El argumento titulo es obligatorio').not().isEmpty(),
     validarCampos,
     validarRol
 ], crearLista);
 router.put('/:id', [
+    validarJWT,
     check('titulo', 'El argumento titulo es obligatorio').not().isEmpty(),
     check('id', 'El identificador no es válido').isMongoId(),
     // campos que son opcionales que vengan pero que si vienen queremos validar el tipo
@@ -25,6 +27,7 @@ router.put('/:id', [
     validarRol
 ], actualizarLista);
 router.delete('/:id', [
+    validarJWT,
     check('id', 'El identificador no es válido').isMongoId(),
     validarCampos
 ], borrarLista);

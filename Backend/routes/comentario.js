@@ -13,6 +13,7 @@ const router = Router();
 
 router.get('/', obtenerComentario);
 router.post('/', [
+    validarJWT,
     check('texto', 'El argumento texto es obligatorio').not().isEmpty(),
     validarCampos,
     validarRol
@@ -25,6 +26,7 @@ router.put('/:id', [
     validarRol
 ], actualizarComentario);
 router.delete('/:id', [
+    validarJWT,
     check('id', 'El identificador no es válido').isMongoId(),
     validarCampos
 ], borrarComentario);

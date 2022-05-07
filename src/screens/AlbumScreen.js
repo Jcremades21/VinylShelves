@@ -197,6 +197,7 @@ export default function AlbumScreen({ navigation, route }) {
           // found data go to then()
           //console.log(ret.useremail);  
           setUsuUID(ret.uid);
+          setusuToken(ret.token);
           let url = Url + "/usuarios?id=" + ret.uid;
             console.log(url);
             axios.get(url,
@@ -208,7 +209,6 @@ export default function AlbumScreen({ navigation, route }) {
             ).then((res) => {   
               //console.log(res.data.listas);  
               setUsu(res.data.usuarios);
-              setusuToken(ret.token);
               setUsuUID(ret.uid);
               //sacamos reviews de amigos
               res.data.usuarios.seguidores.forEach( (element) => {
@@ -459,7 +459,7 @@ export default function AlbumScreen({ navigation, route }) {
         console.error(error)
       });
       setReviewspop(array); 
-    }, []); 
+    }, [load]); 
 
     const onReviewPressed = () => {
       if(token){
@@ -484,7 +484,7 @@ export default function AlbumScreen({ navigation, route }) {
             data,
             {
                 headers: { 'Content-Type': 'application/json',
-                'x-token' : token },
+                'x-token' : usutoken },
                 withCredentials: true
             }
         ).then((res) => {

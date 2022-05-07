@@ -279,7 +279,7 @@ export default function ProfileScreen({ navigation, route }) {
         let split = result.uri.split('/');
         data.append('archivo',{
             uri: result.uri,
-            type: 'image/jpeg',
+            type: result.type,
             name:  split[split.length-1]
         });
         console.log(data);
@@ -287,7 +287,7 @@ export default function ProfileScreen({ navigation, route }) {
         axios.post(url,
             data,
             {
-                headers: { 'Content-Type': 'multipart/form-data',
+                headers: { 'Content-Type': 'application/json',
                 'x-token' : usutoken },
                 withCredentials: true
             }

@@ -5,51 +5,31 @@ const { actualizarBD } = require('../helpers/actualizarbd');
 const fs = require('fs');
 
 const subirArchivo = async(req, res) => {
-    console.log(req.files);
-    if (!req.files || Object.keys(req.files).length === 0) {
+    console.log(req.body._parts[0][1].name);
+    if (!req.body._parts|| Object.keys(req.body._parts).length === 0) {
         return res.status(400).json({
             ok: false,
             msg: 'No se ha enviado archivo'
         });
     }
-    if (req.files.archivo.truncated) {
-        return res.status(400).json({
-            ok: false,
-            msg: `El archivo es demasiado grande, permitido hasta ${process.env.MAXSIZEUPLOAD}MB`
-        });
-    }
 
-    const tipo = req.params.tipo; //foto
+    const tipo = req.body._parts[0][1].type; //foto
     const id = req.params.id;
 
     const archivosValidos = {
         foto: ['jpeg', 'jpg', 'png'],
     }
 
-    const archivo = req.files.archivo;
+    const archivo = req.body._parts[0][1];
     const nombrePartido = archivo.name.split('.');
     const extension = nombrePartido[nombrePartido.length - 1];
 
-
-    if (tipo === 'foto') {
-        if (!archivosValidos.foto.includes(extension)) {
-            return res.status(400).json({
-                ok: false,
-                msg: `El tipo de archivo '${extension}' no esta permitido (${archivosValidos.foto})`
-            });
-        }
-
-    } else {
-        return res.status(400).json({
-            ok: false,
-            msg: `El tipo de operación no está permitida`,
-            tipoOperacion: tipo
-        });
-    }
-
     const path = `${process.env.PATHUPLOAD}`;
+    console.log(path);
     const nombreArchivo = `${uuidv4()}.${extension}`;
+    console.log(nombreArchivo);
     const uploadPath = `${process.env.PATHUPLOAD}/foto/usuario/${nombreArchivo}`;
+    console.log(uploadPath);
     archivo.mv(uploadPath, (err) => {
         if (err) {
             return res.status(400).json({

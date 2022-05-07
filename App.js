@@ -11,6 +11,8 @@ import AppLoading from 'expo-app-loading';
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { StatusBar } from 'react-native';
 import FlashMessage from "react-native-flash-message";
+import { LogBox } from 'react-native';
+LogBox.ignoreAllLogs();
 
 import {
   LoginScreen,
