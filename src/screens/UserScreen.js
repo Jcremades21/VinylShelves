@@ -44,6 +44,7 @@ import { Picker } from '@react-native-picker/picker';
 
 export default function UserScreen({ navigation, route }) {
     const [usu, setUsu] = useState('');  
+    const [me, setMe] = useState('');  
     const [UID, setUID] = useState(''); 
     const [email, setEmail] = useState('');   
     const [token, setToken] = useState('');  
@@ -93,6 +94,17 @@ export default function UserScreen({ navigation, route }) {
             if(ret.uid == id){
                navigation.navigate('Profile')
             }
+            let urlme = Url + "/usuarios?id=" + ret.uid;
+            axios.get(urlme,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : usutoken },
+                    withCredentials: true
+                }
+            ).then((res) => {   
+              //console.log(res.data.listas);  
+              setMe(res.data.usuarios);
+            });
             let url = Url + "/usuarios?id=" + id;
             console.log(url);
             axios.get(url,
@@ -284,7 +296,6 @@ export default function UserScreen({ navigation, route }) {
                     console.log(element._id);
                     if(element._id == id){
                       sigue.splice(index,1);
-                      console.log('deleted');
                     }
                    });
                  const usuario3 = {
@@ -403,9 +414,8 @@ export default function UserScreen({ navigation, route }) {
                  setFollowed(true);
                  setLoad(!load);
                  let url3 = Url + "/usuarios/" + UID;
-                 let sigue = usu.seguidos;
+                 let sigue = me.seguidos;
                  sigue.push(id);
-                 console.log(sigue);
                  const usuario3 = {
                    email: email,
                    seguidos: sigue,

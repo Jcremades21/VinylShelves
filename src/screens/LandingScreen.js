@@ -186,7 +186,7 @@ export default function Landing({ navigation }) {
 
     React.useEffect(() => {
       let array = [];
-      let url = Url + "/usuarios";
+      let url = Url + "/usuarios?pag=0";
       axios.get(url,
           {
               headers: { 'Content-Type': 'application/json',

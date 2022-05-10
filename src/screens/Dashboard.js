@@ -56,7 +56,6 @@ export default function Dashboard({ route, navigation }) {
 
 
   React.useEffect(() => {
-
     axios('https://accounts.spotify.com/api/token', {
       headers: {
         'Content-Type' : 'application/x-www-form-urlencoded',
@@ -147,7 +146,7 @@ export default function Dashboard({ route, navigation }) {
       //cargamos albumes 7 dias de seguidores
       var date = new Date();
       date.setDate(date.getDate() - 3); //actividad de los últimos 3 días
-      res.data.usuarios.seguidores.forEach( (element) => {
+      res.data.usuarios.seguidos.forEach( (element) => {
         let albums = []
         element.reviews.forEach( (element2) => {
             let url2 = Url + "/reviews?id=" + element2;
@@ -186,8 +185,8 @@ export default function Dashboard({ route, navigation }) {
       case 'ExpiredError':
         // TODO
         break;
-    }
-  });
+      }
+    });
   }, []); 
 
    React.useEffect(() => {
@@ -234,7 +233,7 @@ export default function Dashboard({ route, navigation }) {
   
   React.useEffect(() => {
     let array = [];
-    let url = Url + "/usuarios";
+    let url = Url + "/usuarios?pag=0";
     axios.get(url,
         {
             headers: { 'Content-Type': 'application/json',
@@ -246,7 +245,7 @@ export default function Dashboard({ route, navigation }) {
       res.data.usuarios.forEach( (element) => {
         array.push(element);
       });
-      array.sort((a, b) => a.seguidores.length > b.seguidores.length ? 1 : -1)
+      array.sort((a, b) => a.seguidores.length < b.seguidores.length ? 1 : -1)
       setUsers(array.slice(0, 6))
     })
     .catch((error) => {

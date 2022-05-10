@@ -49,7 +49,7 @@ export default function ListsScreen({ navigation }) {
 
     React.useEffect(() => {
         let arrayalb = [];
-        let arraypicks = ['625367b6a7c75d22b8bd905a','62536a92a7c75d22b8bd96b2','62536b7ea7c75d22b8bd9a50','62536df3a7c75d22b8bda2ae'];
+        let arraypicks = ['627a9ff14dbfb6bc9f76a142','627aa0e04dbfb6bc9f76a696','627aa1604dbfb6bc9f76aa20','627aa37f4dbfb6bc9f76b3c2'];
         arraypicks.forEach( (element) => {
         let url = Url + "/listal?id=" + element;
         axios.get(url,
@@ -118,7 +118,7 @@ export default function ListsScreen({ navigation }) {
         //cargamos albumes 7 dias de seguidores
         var date = new Date();
         date.setDate(date.getDate() - 7); //actividad de los últimos 3 días
-        res.data.usuarios.seguidores.forEach( (element) => {
+        res.data.usuarios.seguidos.forEach( (element) => {
           let albums = []
           element.user_lists.forEach( (element2) => {
               let url2 = Url + "/listal?id=" + element2;

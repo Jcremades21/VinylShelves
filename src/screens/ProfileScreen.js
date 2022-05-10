@@ -63,6 +63,7 @@ export default function ProfileScreen({ navigation, route }) {
       });
 
     React.useEffect(() => {
+      navigation.addListener('focus', async () =>{
         storage
         .load({
         key: 'loginState',
@@ -152,6 +153,7 @@ export default function ProfileScreen({ navigation, route }) {
             break;
         }
         });
+      })
     }, [load]); 
 
 

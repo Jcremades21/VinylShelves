@@ -11,11 +11,13 @@ const obtenerUsuarios = async(req, res) => {
     const desde = Number(req.query.desde) || 0;
     const registropp = Number(process.env.DOCSPERPAGE);
     const texto = req.query.texto;
+    const pag = req.query.pag;
     let textoBusqueda = '';
     if (texto) {
         textoBusqueda = new RegExp(texto, 'i');
         // console.log('texto', texto, ' textoBusqueda', textoBusqueda);
     }
+    
     // Obtenemos el ID de usuario por si quiere buscar solo un usuario
     const id = req.query.id || '';
 
@@ -43,16 +45,31 @@ const obtenerUsuarios = async(req, res) => {
         }
         // Si no ha llegado ID, hacemos el get / paginado
         else {
+            if(pag){
             if (texto) {
                 [usuarios, total] = await Promise.all([
-                    Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).limit(registropp).populate('reviews', '-__v').populate('ratings', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                    Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).populate('reviews', '-__v').populate('ratings', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                     Usuario.countDocuments({ $or: [{ username: textoBusqueda}, { email: textoBusqueda }] })
                 ]);
             } else {
                 [usuarios, total] = await Promise.all([
-                    Usuario.find({}).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('ratings', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                    Usuario.find({}).skip(desde).populate('reviews', '-__v').populate('list_liked', '-__v').populate('ratings', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
                     Usuario.countDocuments()
                 ]);
+            }
+            }
+            else{
+                if (texto) {
+                    [usuarios, total] = await Promise.all([
+                        Usuario.find({ $or: [{ username: textoBusqueda }, { email: textoBusqueda }] }).skip(desde).limit(registropp).populate('reviews', '-__v').populate('ratings', '-__v').populate('list_liked', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                        Usuario.countDocuments({ $or: [{ username: textoBusqueda}, { email: textoBusqueda }] })
+                    ]);
+                } else {
+                    [usuarios, total] = await Promise.all([
+                        Usuario.find({}).skip(desde).limit(registropp).populate('reviews', '-__v').populate('list_liked', '-__v').populate('ratings', '-__v').populate('user_lists', '-__v').populate('seguidos', '-__v').populate('seguidores', '-__v'),
+                        Usuario.countDocuments()
+                    ]);
+                }
             }
 
         }
