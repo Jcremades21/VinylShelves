@@ -346,7 +346,7 @@ export default function ListsScreen({ navigation, route }) {
               color: theme.colors.text,
               fontSize: 17
               }
-            ]}>Review added succesfully!</Text>
+            ]}>List added succesfully!</Text>
             <TouchableOpacity onPress={() => navigation.navigate('DetailListScreen', {id: listcreated})}><Text style={styles.link}>Go to your list page!</Text></TouchableOpacity>
             <Button mode="contained" style={styles.buttonTrack} onPress={() => navigation.navigate('Dashboard')}>OK</Button>
             </View>

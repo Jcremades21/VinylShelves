@@ -81,7 +81,7 @@ export default function AddtolistScreen({ navigation, route }) {
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',
-                    'x-token' : token },
+                    'x-token' : usutoken },
                     withCredentials: true
                 }
             ).then((res) => {   
@@ -121,7 +121,7 @@ export default function AddtolistScreen({ navigation, route }) {
         axios.get(url,
             {
                 headers: { 'Content-Type': 'application/json',
-                'x-token' : token },
+                'x-token' : usutoken },
                 withCredentials: true
             }
         ).then((res) => {   
@@ -189,7 +189,7 @@ export default function AddtolistScreen({ navigation, route }) {
                     lista1,
                 {
                     headers: { 'Content-Type': 'application/json',
-                    'x-token' : token },
+                    'x-token' : usutoken },
                     withCredentials: true
                 }
                 ).then((res3) => { 

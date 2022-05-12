@@ -40,7 +40,7 @@ export default function CustomSlider2({ data, navigation }) {
           </View>
           <View style={styles.bottom}>
           <Image style={styles.image} source={{ uri: item.usuimg }}></Image>
-          <Text style={styles.artist}> {item.val} </Text><Text style={styles.artist}></Text><FontAwesome name="star" size={24} color="#FFCF26" />
+          <Text style={styles.artist2} numberOfLines={1}>  {item.usu} </Text><Text style={styles.artist}></Text>
           <View style={styles.icons}><AntDesign name="hearto" size={20} color="#B81EFF" /><Text style={styles.like}> {item.likes}</Text></View>
           <FontAwesome5 name="comment-alt" size={20} color="#B81EFF" /><Text style={styles.like}> {item.comments} </Text>
           </View>
@@ -97,6 +97,14 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       fontFamily: 'Raleway_700Bold',
       marginRight: 16
+    },
+    artist2: {
+      fontSize: 13,
+      color: theme.colors.text,
+      textAlign: 'center',
+      fontFamily: 'Raleway_400Regular_Italic',
+      marginTop: 5,
+      width: 45
     },
     artist: {
       fontSize: 16,

@@ -211,7 +211,7 @@ export default function AlbumScreen({ navigation, route }) {
               setUsu(res.data.usuarios);
               setUsuUID(ret.uid);
               //sacamos reviews de amigos
-              res.data.usuarios.seguidores.forEach( (element) => {
+              res.data.usuarios.seguidos.forEach( (element) => {
                 element.reviews.forEach( (element2) => {
                     let url2 = Url + "/reviews?id=" + element2;
                     console.log(url2);
@@ -229,6 +229,7 @@ export default function AlbumScreen({ navigation, route }) {
                           albumname: res3.data.reviews.albumtitle,
                           albumartist: res3.data.reviews.albumart,
                           usuimg: res3.data.reviews.usuario.imagen,
+                          usu: element.usuario.username,
                           titulo: res3.data.reviews.titulo,
                           texto: res3.data.reviews.texto,
                           likes: res3.data.reviews.likes.length,
@@ -440,6 +441,7 @@ export default function AlbumScreen({ navigation, route }) {
                 albumname: albumResponse.body.name,
                 albumartist: albumResponse.body.artists[0].name,
                 usuimg: element.usuario.imagen,
+                usu: element.usuario.username,
                 titulo: element.titulo,
                 texto: element.texto,
                 likes: element.likes.length,

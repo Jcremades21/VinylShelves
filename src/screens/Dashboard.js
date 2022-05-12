@@ -211,6 +211,7 @@ export default function Dashboard({ route, navigation }) {
               albumname: albumResponse.body.name,
               albumartist: albumResponse.body.artists[0].name,
               usuimg: element.usuario.imagen,
+              usu: element.usuario.username,
               titulo: element.titulo,
               texto: element.texto,
               likes: element.likes.length,

@@ -23,7 +23,6 @@ export default function ResetPasswordScreen({ navigation }) {
 
   return (
     <Background>
-      <BackButton goBack={navigation.goBack} />
       <View style={styles.Banner}>
       <Logo />
       </View>
@@ -57,7 +56,7 @@ export default function ResetPasswordScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   Banner:{
-    alignItems: 'center'
+    alignItems: 'center',
   },
   text: {
     color: theme.colors.text,

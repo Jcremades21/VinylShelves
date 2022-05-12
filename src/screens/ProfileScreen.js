@@ -100,36 +100,51 @@ export default function ProfileScreen({ navigation, route }) {
             })
             .then(tokenResponse => { 
             spotifyApi.setAccessToken(tokenResponse.data.access_token); 
-            spotifyApi.getAlbums([res.data.usuarios.favs]).then(
+            spotifyApi.getAlbum(res.data.usuarios.favs[0]).then(
             function(albumResponse) {
+              console.log(albumResponse.body);
                 const favo1 = {
-                    id: albumResponse.body.albums[0].id,
-                    title: albumResponse.body.albums[0].name,
-                    artist: albumResponse.body.albums[0].artists[0].name,
-                    source: albumResponse.body.albums[0].images[0].url
+                    id: albumResponse.body.id,
+                    title: albumResponse.body.name,
+                    artist: albumResponse.body.artists[0].name,
+                    source: albumResponse.body.images[0].url
                 }
-                const favo2 = {
-                    id: albumResponse.body.albums[1].id,
-                    title: albumResponse.body.albums[1].name,
-                    artist: albumResponse.body.albums[1].artists[0].name,
-                    source: albumResponse.body.albums[1].images[0].url
-                }
-                const favo3 = {
-                    id: albumResponse.body.albums[2].id,
-                    title: albumResponse.body.albums[2].name,
-                    artist: albumResponse.body.albums[2].artists[0].name,
-                    source: albumResponse.body.albums[2].images[0].url
-                }
-
-                setFav0(favo1)   
-                setFav1(favo2)                
-                setFav2(favo3)                
-
+                setFav0(favo1)             
               },
               function(err) {
                 console.error(err);
               }
             );
+            spotifyApi.getAlbum(res.data.usuarios.favs[1]).then(
+              function(albumResponse) {
+                console.log(albumResponse.body);
+                  const favo1 = {
+                      id: albumResponse.body.id,
+                      title: albumResponse.body.name,
+                      artist: albumResponse.body.artists[0].name,
+                      source: albumResponse.body.images[0].url
+                  }
+                  setFav1(favo1)             
+                },
+                function(err) {
+                  console.error(err);
+                }
+              );
+              spotifyApi.getAlbum(res.data.usuarios.favs[2]).then(
+                function(albumResponse) {
+                  console.log(albumResponse.body);
+                    const favo1 = {
+                        id: albumResponse.body.id,
+                        title: albumResponse.body.name,
+                        artist: albumResponse.body.artists[0].name,
+                        source: albumResponse.body.images[0].url
+                    }
+                    setFav2(favo1)             
+                  },
+                  function(err) {
+                    console.error(err);
+                  }
+                );
             });
             })
             .catch((error) => {
@@ -152,7 +167,109 @@ export default function ProfileScreen({ navigation, route }) {
         });
       })
     }, [load]); 
+    React.useEffect(() => {
+        storage
+        .load({
+        key: 'loginState',
+        autoSync: true,
+        syncInBackground: true,
+        syncParams: {
+            extraFetchOptions: {
+            },
+            someFlag: true
+        }
+        })
+        .then(ret => {
+        // found data go to then()
+        //console.log(ret.useremail);
+            setUsutoken(ret.token);
+            setUID(ret.uid);
+            let url = Url + "/usuarios?id=" + ret.uid;
+            axios.get(url,
+                {
+                    headers: { 'Content-Type': 'application/json',
+                    'x-token' : usutoken },
+                    withCredentials: true
+                }
+            ).then((res) => {   
+              //console.log(res.data.listas);  
+              setUsu(res.data.usuarios);
+              axios('https://accounts.spotify.com/api/token', {
+              headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic ' + btoa(spotify.ClientId + ':' + spotify.ClientSecret)      
+              },
+              data: 'grant_type=client_credentials',
+              method: 'POST'
+            })
+            .then(tokenResponse => { 
+            spotifyApi.setAccessToken(tokenResponse.data.access_token); 
+            spotifyApi.getAlbum(res.data.usuarios.favs[0]).then(
+            function(albumResponse) {
+              console.log(albumResponse.body);
+                const favo1 = {
+                    id: albumResponse.body.id,
+                    title: albumResponse.body.name,
+                    artist: albumResponse.body.artists[0].name,
+                    source: albumResponse.body.images[0].url
+                }
+                setFav0(favo1)             
+              },
+              function(err) {
+                console.error(err);
+              }
+            );
+            spotifyApi.getAlbum(res.data.usuarios.favs[1]).then(
+              function(albumResponse) {
+                console.log(albumResponse.body);
+                  const favo1 = {
+                      id: albumResponse.body.id,
+                      title: albumResponse.body.name,
+                      artist: albumResponse.body.artists[0].name,
+                      source: albumResponse.body.images[0].url
+                  }
+                  setFav1(favo1)             
+                },
+                function(err) {
+                  console.error(err);
+                }
+              );
+              spotifyApi.getAlbum(res.data.usuarios.favs[2]).then(
+                function(albumResponse) {
+                  console.log(albumResponse.body);
+                    const favo1 = {
+                        id: albumResponse.body.id,
+                        title: albumResponse.body.name,
+                        artist: albumResponse.body.artists[0].name,
+                        source: albumResponse.body.images[0].url
+                    }
+                    setFav2(favo1)             
+                  },
+                  function(err) {
+                    console.error(err);
+                  }
+                );
+            });
+            })
+            .catch((error) => {
+              console.error(error)
+                });
 
+        })
+        .catch(err => {
+        // any exception including data not found
+        // goes to catch()
+        console.warn(err.message);
+        switch (err.name) {
+            case 'NotFoundError':
+            // TODO;
+            break;
+            case 'ExpiredError':
+            // TODO
+            break;
+        }
+        });
+    }, [load]); 
 
     function addfav(pos, album){
       let url = Url + "/usuarios/" + UID;
