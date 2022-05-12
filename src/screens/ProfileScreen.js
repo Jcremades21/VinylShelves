@@ -81,7 +81,6 @@ export default function ProfileScreen({ navigation, route }) {
             setUsutoken(ret.token);
             setUID(ret.uid);
             let url = Url + "/usuarios?id=" + ret.uid;
-            console.log(url);
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',
@@ -90,7 +89,6 @@ export default function ProfileScreen({ navigation, route }) {
                 }
             ).then((res) => {   
               //console.log(res.data.listas);  
-              console.log(res.data); 
               setUsu(res.data.usuarios);
               axios('https://accounts.spotify.com/api/token', {
               headers: {
@@ -104,7 +102,6 @@ export default function ProfileScreen({ navigation, route }) {
             spotifyApi.setAccessToken(tokenResponse.data.access_token); 
             spotifyApi.getAlbums([res.data.usuarios.favs]).then(
             function(albumResponse) {
-                console.log(albumResponse);
                 const favo1 = {
                     id: albumResponse.body.albums[0].id,
                     title: albumResponse.body.albums[0].name,
@@ -179,7 +176,6 @@ export default function ProfileScreen({ navigation, route }) {
         user_lists: usu.user_lists,
         username: usu.username
        }
-      console.log(usuario);
       axios.put(url,
         usuario,
        {
@@ -272,7 +268,6 @@ export default function ProfileScreen({ navigation, route }) {
         quality: 1,
       });
   
-      console.log(result);
   
       if (!result.cancelled) {
         setImage(result.uri);
@@ -284,7 +279,6 @@ export default function ProfileScreen({ navigation, route }) {
             type: result.type,
             name:  split[split.length-1]
         });
-        console.log(data);
         let url = Url + "/upload/foto/usuario/"+ UID;
         axios.post(url,
             data,

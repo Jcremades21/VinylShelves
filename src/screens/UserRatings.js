@@ -81,7 +81,6 @@ export default function UserRatings({ navigation, route }) {
             setUsutoken(ret.token);
             setUID(ret.uid);
             let url = Url + "/usuarios?id=" + id;
-            console.log(url);
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',
@@ -90,9 +89,7 @@ export default function UserRatings({ navigation, route }) {
                 }
             ).then((res) => {   
               //console.log(res.data.listas);  
-              console.log(res.data); 
               setUsu(res.data.usuarios);
-              console.log(res.data.usuarios.ratings);
             })
             .catch((error) => {
               console.error(error)
@@ -112,9 +109,7 @@ export default function UserRatings({ navigation, route }) {
                 }
             ).then((res) => {   
               //console.log(res.data.listas);  
-              console.log(res.data); 
               setUsu(res.data.usuarios);
-              console.log(res.data.usuarios.ratings);
             })
             .catch((error) => {
               console.error(error)

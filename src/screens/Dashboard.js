@@ -167,7 +167,8 @@ export default function Dashboard({ route, navigation }) {
                 artist: res3.data.reviews.albumart
               }
               albums.push(data);
-              setFriends(albums);
+              //setFriends(albums);
+              setFriends((friends) => friends.concat(data))
               }
               });
              });

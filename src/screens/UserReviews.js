@@ -100,7 +100,6 @@ export default function UserReviews({ navigation, route }) {
         // any exception including data not found
         // goes to catch()
         let url = Url + "/usuarios?id=" + id;
-            console.log(url);
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',

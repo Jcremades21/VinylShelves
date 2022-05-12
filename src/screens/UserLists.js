@@ -83,7 +83,6 @@ export default function UserLists({ navigation, route }) {
             setUsutoken(ret.token);
             setUID(ret.uid);
             let url = Url + "/usuarios?id=" + id;
-            console.log(url);
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',
@@ -94,7 +93,6 @@ export default function UserLists({ navigation, route }) {
               //console.log(res.data.listas);  
               //console.log(res.data); 
               setUsu(res.data.usuarios);
-              console.log(res.data.usuarios);
               switch(selectedSort) {
                 case '1':
                   break;
@@ -116,7 +114,6 @@ export default function UserLists({ navigation, route }) {
         // any exception including data not found
         // goes to catch()
         let url = Url + "/usuarios?id=" + id;
-            console.log(url);
             axios.get(url,
                 {
                     headers: { 'Content-Type': 'application/json',
@@ -127,7 +124,6 @@ export default function UserLists({ navigation, route }) {
               //console.log(res.data.listas);  
               //console.log(res.data); 
               setUsu(res.data.usuarios);
-              console.log(res.data.usuarios);
               switch(selectedSort) {
                 case '1':
                   break;
