@@ -229,7 +229,7 @@ export default function AlbumScreen({ navigation, route }) {
                           albumname: res3.data.reviews.albumtitle,
                           albumartist: res3.data.reviews.albumart,
                           usuimg: res3.data.reviews.usuario.imagen,
-                          usu: element.usuario.username,
+                          usu: res3.data.reviews.usuario.username,
                           titulo: res3.data.reviews.titulo,
                           texto: res3.data.reviews.texto,
                           likes: res3.data.reviews.likes.length,

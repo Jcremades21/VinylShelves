@@ -291,7 +291,7 @@ export default function UserScreen({ navigation, route }) {
                  setFollowed(false);
                  setLoad(!load);
                  let url3 = Url + "/usuarios/" + UID;
-                 let sigue = usu.seguidos;
+                 let sigue = me.seguidos;
                  sigue.forEach( (element, index) => { //lo borramos del usuario
                     console.log(element._id);
                     if(element._id == id){

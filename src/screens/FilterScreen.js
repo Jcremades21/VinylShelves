@@ -206,7 +206,18 @@ export default function FilterScreen({ navigation, route }) {
                     />
                </View>
             </View>
-            <View style={styles.containerButton}>
+            {UID ? <View style={styles.containerButton}>
+            <Button onPress={() => navigation.navigate('Dashboard', {
+            screen: 'Search',
+            params: {
+                fibyalb: isEnabled,
+                fibyart: isEnabled1,
+                fibyrev: isEnabled2,
+                fybylis: isEnabled3,
+                fybyuse: isEnabled4
+            },
+            })} style={styles.button} mode="contained">Apply</Button>
+            </View>:<View style={styles.containerButton}>
             <Button onPress={() => navigation.navigate('Landing', {
             screen: 'Search',
             params: {
@@ -217,7 +228,7 @@ export default function FilterScreen({ navigation, route }) {
                 fybyuse: isEnabled4
             },
             })} style={styles.button} mode="contained">Apply</Button>
-            </View>
+            </View>}
             </ScrollView>
         </View>
     );
