@@ -91,10 +91,7 @@ export default function Landing({ navigation }) {
          setNews(newsfromapi);
         });
         console.log(newsfromapi);
-        
-      });
-      const InsertaFavs = () => {
-        spotifyApi.setAccessToken(token);  
+        spotifyApi.setAccessToken(tokenResponse.data.access_token);  
         spotifyApi.getAlbums(['4KjbNbnTnJ97kZgQkOHr6v', '5LEXck3kfixFaA3CqVE7bC','6X1x82kppWZmDzlXXK3y3q','6SBkXTPlJ3oEaFwRm5o2lD','3hhDpPtCFuQbppwYgsVhMO','6c94J2yum9wHxmbSB27YXE','7D2NdGvBHIavgLhmcwhluK']).then(
 
             function(albumResponse) {
@@ -115,9 +112,7 @@ export default function Landing({ navigation }) {
               console.error(err);
             }
           );
-        }
-        const InsertaPops = () => {
-        spotifyApi.setAccessToken(token);  
+        spotifyApi.setAccessToken(tokenResponse.data.access_token);  
         spotifyApi.getAlbums(['4SZko61aMnmgvNhfhgTuD3', '2ODvWsOgouMbaA5xf0RkJe','6trNtQUgC8cgbWcqoMYkOR','5lKlFlReHOLShQKyRv6AL9','0S0KGZnfBGSIssfF54WSJh','2Ti79nwTsont5ZHfdxIzAm','0ETFjACtuP2ADo6LFhL6HN']).then(
             function(albumResponse) {
               albumResponse.body.albums.forEach( (element2) => {
@@ -137,9 +132,8 @@ export default function Landing({ navigation }) {
               console.error(err);
             }
           );
-        }
-        InsertaPops();
-        InsertaFavs();
+      });
+
     }, [spotify.ClientId, spotify.ClientSecret]); 
 
     React.useEffect(() => {

@@ -145,7 +145,7 @@ export default function Dashboard({ route, navigation }) {
       setUsunombre(res.data.usuarios.username);
       //cargamos albumes 7 dias de seguidores
       var date = new Date();
-      date.setDate(date.getDate() - 3); //actividad de los últimos 3 días
+      date.setDate(date.getDate() - 10); //actividad de los últimos 3 días
       res.data.usuarios.seguidos.forEach( (element) => {
         let albums = []
         element.reviews.forEach( (element2) => {
